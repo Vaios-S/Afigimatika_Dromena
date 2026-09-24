@@ -24,13 +24,16 @@ export const site = {
 
 export const invite = { label: "Προσκαλέστε μας", href: routes.invite };
 
+const pages = {
+  team: { label: "Η ομάδα", href: routes.team },
+  news: { label: "Νέα & Εκδηλώσεις", href: routes.news },
+  contact: { label: "Επικοινωνία", href: routes.invite },
+};
+
 export const header = {
   navLabel: "Κύρια πλοήγηση",
-  nav: [
-    { label: "Η ομάδα", href: routes.team },
-    { label: "Νέα & Εκδηλώσεις", href: routes.news },
-    { label: "Επικοινωνία", href: routes.invite },
-  ],
+  // No "Επικοινωνία" here: the invite button already links to that page.
+  nav: [pages.team, pages.news],
   menuOpen: "Μενού",
   menuClose: "Κλείσιμο",
 };
@@ -45,7 +48,7 @@ export const footer = {
   tagline: "Αφηγήσεις σε όλη την Ελλάδα και το εξωτερικό",
   siteNav: {
     title: "Ο ιστότοπος",
-    links: header.nav,
+    links: [pages.team, pages.news, pages.contact],
   },
   contactTitle: "Επικοινωνία",
   socialTitle: "Ακολουθήστε μας",

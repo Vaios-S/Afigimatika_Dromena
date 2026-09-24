@@ -1,7 +1,9 @@
 ---
 /**
- * Site header. One nav: inline on desktop, a native popover sheet on mobile
- * (no JavaScript; Esc and clicking outside close it).
+ * Site header. One nav: inline on wide screens, a native popover sheet below
+ * 1100px (no JavaScript; Esc and clicking outside close it).
+ * The menu buttons sit in wrappers owned by this component, so hiding them
+ * never depends on overriding Button's own styles.
  */
 import { header, invite, routes, site } from "../data/site";
 import Button from "./Button.astro";
@@ -17,25 +19,23 @@ const current = (href: string) => (path === href ? "page" : undefined);
     <span>{site.name}</span>
   </a>
 
-  <Button
-    class="menu-toggle"
-    variant="secondary"
-    size="sm"
-    popovertarget="site-menu"
-  >
-    {header.menuOpen}
-  </Button>
+  <div class="menu-toggle">
+    <Button variant="secondary" size="sm" popovertarget="site-menu">
+      {header.menuOpen}
+    </Button>
+  </div>
 
   <div id="site-menu" class="menu" popover>
-    <Button
-      class="menu-close"
-      variant="secondary"
-      size="sm"
-      popovertarget="site-menu"
-      popovertargetaction="hide"
-    >
-      {header.menuClose}
-    </Button>
+    <div class="menu-close">
+      <Button
+        variant="secondary"
+        size="sm"
+        popovertarget="site-menu"
+        popovertargetaction="hide"
+      >
+        {header.menuClose}
+      </Button>
+    </div>
     <nav aria-label={header.navLabel}>
       <ul class="nav-list" role="list">
         {header.nav.map((link) => (
@@ -110,7 +110,7 @@ const current = (href: string) => (path === href ? "page" : undefined);
     background: color-mix(in srgb, var(--color-ink) 45%, transparent);
   }
 
-  .menu :global(.menu-close) {
+  .menu-close {
     align-self: flex-end;
   }
 
@@ -127,8 +127,8 @@ const current = (href: string) => (path === href ? "page" : undefined);
      The full nav needs about 1050px, so the header keeps the menu button
      up to 1100px (the rest of the page switches layout at 760px). */
   @media (width >= 1100px) {
-    .header :global(.menu-toggle),
-    .header :global(.menu-close) {
+    .menu-toggle,
+    .menu-close {
       display: none;
     }
 
