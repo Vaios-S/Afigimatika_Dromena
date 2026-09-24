@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Fonts: the only place font files and families are defined.
+   Temporary choice. See "How to change fonts" in CLAUDE.md.
+   Each file declares every subset with its own unicode-range, so the browser
+   downloads only the subsets the page uses (greek, greek-ext, latin).
+   ========================================================================== */
+@import "@fontsource/alegreya/400.css";
+@import "@fontsource/alegreya/400-italic.css";
+@import "@fontsource/alegreya/500.css";
+@import "@fontsource/literata/400.css";
+@import "@fontsource/literata/400-italic.css";
+
+:root {
+  --font-display: "Alegreya", Georgia, "Times New Roman", serif;
+  --font-body: "Literata", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /* ------------------------------------------------------------------------
+     Color
+     ------------------------------------------------------------------------ */
+  --color-paper: #f3e7cf;
+  --color-paper-shade: #ebd9b8;
+  --color-rule-soft: #d8bf98;
+  --color-ink-red: #a3261c; /* thread, ink, accents */
+  --color-oxblood: #5e1914; /* dark surfaces, hover, thread twist */
+  --color-ink: #2a1b15;
+  --color-ink-muted: #6b4a3a;
+  --color-rule-on-dark: #9a5a4c;
+  --color-focus: var(--color-ink-red); /* dark sections override with paper */
+
+  /* Paper grain: fractal noise tinted towards ink, tiled. */
+  --texture-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.13 0 0 0 0 0.07 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+
+  /* ------------------------------------------------------------------------
+     Type scale
+     Fluid between the design's mobile (390px) and desktop (1440px) frames.
+     ------------------------------------------------------------------------ */
+  --text-hero: clamp(2.75rem, 1.45rem + 5.333vw, 6.25rem); /* 44 → 100 */
+  --text-h2: clamp(2.375rem, 1.818rem + 2.286vw, 3.875rem); /* 38 → 62 */
+  --text-cta: clamp(2.125rem, 1.707rem + 1.714vw, 3.25rem); /* 34 → 52 */
+  --text-verse: clamp(1.8125rem, 1.232rem + 2.381vw, 3.375rem); /* 29 → 54 */
+  --text-quote: clamp(1.75rem, 1.379rem + 1.524vw, 2.75rem); /* 28 → 44 */
+  --text-quote-sm: clamp(1.375rem, 1.282rem + 0.381vw, 1.625rem); /* 22 → 26 */
+  --text-tile-lg: clamp(2.25rem, 1.971rem + 1.143vw, 3rem); /* 36 → 48 */
+  --text-title: clamp(1.625rem, 1.486rem + 0.571vw, 2rem); /* 26 → 32 */
+  --text-logo: clamp(1.3125rem, 1.173rem + 0.571vw, 1.6875rem); /* 21 → 27 */
+  --text-tile: clamp(1.25rem, 1.157rem + 0.381vw, 1.5rem); /* 20 → 24 */
+  --text-lead: clamp(1.1875rem, 1.141rem + 0.19vw, 1.3125rem); /* 19 → 21 */
+  --text-body-l: clamp(1.0625rem, 0.993rem + 0.286vw, 1.25rem); /* 17 → 20 */
+  --text-body: clamp(1rem, 0.977rem + 0.095vw, 1.0625rem); /* 16 → 17 */
+  --text-button: clamp(0.9375rem, 0.914rem + 0.095vw, 1rem); /* 15 → 16 */
+  --text-label: clamp(0.8125rem, 0.766rem + 0.19vw, 0.9375rem); /* 13 → 15 */
+  --text-small: clamp(0.875rem, 0.852rem + 0.095vw, 0.9375rem); /* 14 → 15 */
+  --text-tag: 0.65625rem; /* 10.5, placeholder tags and captions */
+
+  --leading-hero: 1.04;
+  --leading-display: 1.08;
+  --leading-title: 1.12;
+  --leading-verse: 1.2;
+  --leading-quote: 1.3;
+  --leading-body: 1.6;
+
+  --tracking-label: 0.16em;
+  --tracking-label-wide: 0.18em;
+  --tracking-button: 0.12em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+
+  /* ------------------------------------------------------------------------
+     Space
+     ------------------------------------------------------------------------ */
+  --space-3xs: 0.25rem; /* 4 */
+  --space-2xs: 0.5rem; /* 8 */
+  --space-xs: 0.75rem; /* 12 */
+  --space-s: 1rem; /* 16 */
+  --space-m: 1.25rem; /* 20 */
+  --space-l: 1.5rem; /* 24 */
+  --space-xl: 2rem; /* 32 */
+  --space-2xl: 2.5rem; /* 40 */
+  --space-3xl: 3.5rem; /* 56 */
+  --space-4xl: 4.5rem; /* 72 */
+  --space-5xl: 6rem; /* 96 */
+  --space-6xl: 8rem; /* 128 */
+
+  --space-gutter: clamp(1.25rem, -0.329rem + 6.476vw, 5.5rem); /* 20 → 88 */
+  --space-frame: clamp(
+    0.875rem,
+    -0.1rem + 4vw,
+    3.5rem
+  ); /* 14 → 56, hero frame inset */
+  --space-section: clamp(4rem, 2.886rem + 4.571vw, 7rem); /* 64 → 112 */
+
+  /* ------------------------------------------------------------------------
+     Layout
+     Breakpoint: the design switches to its mobile layout below 760px.
+     CSS variables cannot be used in media queries, so components write
+     `@media (width < 760px)` directly.
+     ------------------------------------------------------------------------ */
+  --width-page: 90rem; /* 1440 */
+  --width-content: 79rem; /* 1264 */
+  --width-wide: 66.25rem; /* 1060, testimonials */
+  --width-text: 47.5rem; /* 760, verse intro */
+
+  /* ------------------------------------------------------------------------
+     Rules and frames (double-rule borders are composed from these)
+     ------------------------------------------------------------------------ */
+  --rule-hair: 1px;
+  --rule-thin: 1.5px;
+  --rule-thick: 3px;
+  --frame-gap: 5px; /* paper gap inside tiles and cards */
+  --frame-gap-hero: 8px;
+
+  /* ------------------------------------------------------------------------
+     Red thread
+     ------------------------------------------------------------------------ */
+  --thread-color: var(--color-ink-red);
+  --thread-twist-color: var(--color-oxblood);
+  --thread-width: 4.4px;
+
+  /* ------------------------------------------------------------------------
+     Motion
+     ------------------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-reveal: 700ms;
+  --stagger-verse: 280ms;
+}

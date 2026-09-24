@@ -1,0 +1,127 @@
+@import "./tokens.css";
+
+/* ==========================================================================
+   Reset
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+body {
+  min-height: 100vh;
+  background-color: var(--color-paper);
+  background-image: var(--texture-grain);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-display);
+  text-wrap: balance;
+}
+
+h3 {
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-title);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-ink-red);
+  transition: color var(--duration-fast) ease;
+}
+
+a:hover {
+  color: var(--color-oxblood);
+}
+
+/* ==========================================================================
+   Focus
+   ========================================================================== */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/* Small uppercase display label. Copy is stored in normal case; with
+   lang="el" the browser drops the tonos and keeps the diaeresis. */
+.label {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-label);
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--color-ink-red);
+}
+
+.visually-hidden:not(:focus-within, :active) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

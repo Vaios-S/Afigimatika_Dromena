@@ -66,9 +66,17 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 Fonts are temporary. All font imports and the `--font-display` / `--font-body` variables (with fallback stacks) live together at the top of `src/styles/tokens.css` and nowhere else. No component references a font name directly.
 
-1. Check that the new font has Greek. Its Fontsource page (fontsource.org) must list the **greek** and **greek-ext** subsets. If it does not, do not use it. Headings need polytonic support, which lives in greek-ext.
-2. Install the package: `npm install @fontsource/<font-name>`, or `npm install @fontsource-variable/<font-name>` for the variable version.
-3. In `tokens.css`, replace the old `@import` lines at the top with the new font's per-subset files for each weight and style in use. Import only the greek, greek-ext and latin subsets. Check `node_modules/@fontsource/<font-name>/` for the exact file names (pattern: `<subset>-<weight>.css` and `<subset>-<weight>-italic.css`).
-4. Update `--font-display` and/or `--font-body` in `tokens.css` to the new family name. Keep a serif fallback stack after it (for example `"New Font", Georgia, serif`).
+Weights and styles in use: display 400, 400 italic, 500; body 400, 400 italic.
+
+1. Check that the new font has Greek. Its Fontsource page (fontsource.org) must list the **greek** and **greek-ext** subsets. If it does not, do not use it. The verse and quotes may use polytonic Greek, which lives in greek-ext. Locally, `node_modules/@fontsource/<font-name>/` must contain `greek-400.css` and `greek-ext-400.css`.
+2. Install the package: `npm install @fontsource/<font-name>`.
+3. In `tokens.css`, replace the old `@import` lines at the top with the new package's per-weight files, one line per weight and style in use:
+   ```css
+   @import "@fontsource/<font-name>/400.css";
+   @import "@fontsource/<font-name>/400-italic.css";
+   @import "@fontsource/<font-name>/500.css";
+   ```
+   Use these per-weight files, not the per-subset ones (`greek-400.css`, `latin-400.css`). The per-weight files declare every subset with its own `unicode-range`, so the browser downloads only the greek, greek-ext and latin files the page needs. The per-subset files have no `unicode-range`, and importing several of them makes one subset override the other.
+4. Update `--font-display` and/or `--font-body` in `tokens.css` to the new family name (as written in the package's CSS `font-family`). Keep the serif fallback stack after it, for example `"New Font", Georgia, "Times New Roman", serif`.
 5. Uninstall the old package: `npm uninstall @fontsource/<old-font-name>`.
-6. Run `npm run build` and check the homepage for Greek text, accents, the diaeresis in uppercase labels and polytonic characters.
+6. Run `npm run build` and check the homepage: Greek text with accents, polytonic characters, italics, and uppercase labels (no tonos, diaeresis kept, as in ΠΡΩΤΕΪΝΗ).
