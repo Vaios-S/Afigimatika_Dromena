@@ -132,11 +132,18 @@
   --thread-twist-color: var(--color-oxblood);
   --thread-width: 4.4px;
 
+  /* Reveal timing. Geometry (tip position, wobble, knots, fibres) lives in
+     src/scripts/red-thread.ts. */
+  --thread-card-offset: 24px; /* cards rise this far as they appear */
+  --thread-card-duration: 700ms;
+  --thread-verse-offset: 14px; /* verse lines rise this far */
+  --thread-verse-duration: 900ms;
+  --thread-verse-delay: 280ms; /* added per verse line */
+  --thread-end-duration: 800ms; /* bow and closing line fade */
+
   /* ------------------------------------------------------------------------
      Motion
      ------------------------------------------------------------------------ */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   --duration-fast: 150ms;
-  --duration-reveal: 700ms;
-  --stagger-verse: 280ms;
 }

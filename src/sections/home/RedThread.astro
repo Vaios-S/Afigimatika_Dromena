@@ -1,0 +1,347 @@
+---
+/**
+ * "Red thread" section: the opening verse, the milestones and the closing
+ * line. The thread is drawn by src/scripts/red-thread.ts; the data-thread-*
+ * attributes mark what it measures. Without JavaScript everything is visible.
+ * Desktop: cards alternate left and right, overlapping vertically, leaving a
+ * central gutter for the thread. Mobile: one column with a left gutter.
+ */
+import Ornament from "../../components/Ornament.astro";
+import Photo from "../../components/Photo.astro";
+import { redThread, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+---
+
+<section class="red-thread" aria-labelledby="red-thread-title" data-red-thread>
+  <div class="intro" data-thread-intro>
+    <h2 id="red-thread-title" class="label title">
+      {redThread.title}
+    </h2>
+    <p class="verse">
+      {redThread.verse.map((line, i) => (
+        <span class="verse-line" style={`--line: ${i}`}>
+          {line}
+        </span>
+      ))}
+    </p>
+    <p class="verse-note">{redThread.verseNote}</p>
+  </div>
+
+  <ol class="milestones" role="list">
+    {redThread.milestones.map((milestone) => (
+      <li class="milestone" data-thread-card>
+        <div class="divider" aria-hidden="true">
+          <span />
+          <Ornament name="flower" />
+          <span />
+        </div>
+        <div class="meta">
+          <span class="label">{milestone.year}</span>
+          {SHOW_PLACEHOLDER_TAGS && milestone.placeholder && (
+            <span class="placeholder-tag">{site.placeholderTag}</span>
+          )}
+        </div>
+        <h3 class="milestone-title">{milestone.title}</h3>
+        <p class="milestone-text">{milestone.text}</p>
+        {milestone.image && (
+          <div class="photo-frame">
+            <Photo
+              image={milestone.image}
+              sizes="(width < 760px) calc(100vw - 88px), 450px"
+            />
+          </div>
+        )}
+      </li>
+    ))}
+  </ol>
+
+  <div class="ending" data-thread-end>
+    <p class="ending-text">
+      {redThread.ending.text} <em>{redThread.ending.accent}</em>
+    </p>
+    <Ornament name="sprig" class="sprig" />
+  </div>
+</section>
+
+<script>
+  import "../../scripts/red-thread";
+</script>
+
+<style>
+  .red-thread {
+    position: relative;
+    padding: var(--space-section) var(--space-gutter) var(--space-6xl);
+  }
+
+  /* Content sits above the thread. */
+  .intro,
+  .milestones,
+  .ending {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Thread (created by the script) ------------------------------------------- */
+  /* A clipping window moved with transforms; see red-thread.ts. */
+  .red-thread :global(.thread) {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .red-thread :global(.thread-svg) {
+    display: block;
+    overflow: visible;
+    will-change: transform;
+  }
+
+  .red-thread :global(.thread-line),
+  .red-thread :global(.thread-twist) {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .red-thread :global(.thread-line) {
+    stroke: var(--thread-color);
+  }
+
+  .red-thread :global(.thread-core) {
+    stroke-width: var(--thread-width);
+  }
+
+  .red-thread :global(.thread-twist) {
+    stroke: var(--thread-twist-color);
+  }
+
+  .red-thread :global(.thread-fill) {
+    fill: var(--thread-color);
+  }
+
+  .red-thread :global(.thread-bow) {
+    position: absolute;
+    overflow: visible;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--thread-end-duration) ease;
+  }
+
+  .red-thread :global(.thread-bow.is-shown) {
+    opacity: 1;
+  }
+
+  /* Reveal states: only while the script runs with motion allowed. ------------ */
+  .is-animated .verse-line {
+    opacity: 0;
+    transform: translateY(var(--thread-verse-offset));
+    transition:
+      opacity var(--thread-verse-duration) ease,
+      transform var(--thread-verse-duration) var(--ease-out);
+    transition-delay: calc(var(--line) * var(--thread-verse-delay));
+  }
+
+  .is-animated .milestone {
+    opacity: 0;
+    transform: translateY(var(--thread-card-offset));
+    transition:
+      opacity var(--thread-card-duration) ease,
+      transform var(--thread-card-duration) var(--ease-out);
+  }
+
+  .is-animated .ending {
+    opacity: 0;
+    transition: opacity var(--thread-end-duration) ease;
+  }
+
+  .is-animated .intro:global(.is-shown) .verse-line,
+  .is-animated .milestone:global(.is-shown),
+  .is-animated .ending:global(.is-shown) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Intro -------------------------------------------------------------------- */
+  .intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: var(--width-text);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .title {
+    margin-bottom: var(--space-l);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .verse {
+    font-family: var(--font-display);
+    font-size: var(--text-verse);
+    font-style: italic;
+    line-height: var(--leading-verse);
+  }
+
+  .verse-line {
+    display: block;
+  }
+
+  .verse-line:first-child {
+    color: var(--color-ink-red);
+  }
+
+  .verse-note {
+    margin-top: var(--space-xl);
+    font-style: italic;
+    color: var(--color-ink-muted);
+  }
+
+  /* Milestones --------------------------------------------------------------- */
+  .milestones {
+    display: flex;
+    flex-direction: column;
+    max-width: var(--width-content);
+    margin: var(--space-8xl) auto 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .milestone {
+    /* 460px at the 1440 frame; narrower on tablets so the gutter stays open. */
+    width: min(28.75rem, 44%);
+    padding-bottom: var(--space-m);
+    border-bottom: var(--rule-hair) solid var(--color-ink-red);
+  }
+
+  .milestone:nth-child(odd) {
+    align-self: flex-start;
+  }
+
+  .milestone:nth-child(even) {
+    align-self: flex-end;
+  }
+
+  /* Alternating cards overlap vertically, as in the design. */
+  .milestone + .milestone {
+    margin-top: calc(-1 * var(--space-6xl));
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--color-ink-red);
+  }
+
+  .divider::before,
+  .divider::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .divider span {
+    flex: 1;
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .divider :global(svg) {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    margin-top: var(--space-m);
+  }
+
+  .milestone-title {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-title);
+  }
+
+  .milestone-text {
+    margin-top: var(--space-2xs);
+  }
+
+  .photo-frame {
+    margin-top: var(--space-s);
+    padding: var(--frame-gap);
+    border: var(--rule-hair) solid var(--color-ink-red);
+  }
+
+  /* Ending ------------------------------------------------------------------- */
+  .ending {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    margin-top: calc(var(--space-8xl) + var(--space-3xl));
+    text-align: center;
+  }
+
+  .ending-text {
+    font-family: var(--font-display);
+    font-size: var(--text-quote);
+    font-style: italic;
+    line-height: var(--leading-verse);
+  }
+
+  .ending-text em {
+    color: var(--color-ink-red);
+  }
+
+  .ending :global(.sprig) {
+    width: 16.25rem;
+    color: var(--color-ink-red);
+  }
+
+  /* Mobile: one column; the left gutter is kept for the thread. ---------------- */
+  @media (width < 760px) {
+    .red-thread {
+      padding: var(--space-6xl) var(--space-m) var(--space-4xl) var(--space-4xl);
+    }
+
+    .intro,
+    .ending {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .title {
+      margin-bottom: var(--space-s);
+    }
+
+    .verse-note {
+      margin-top: var(--space-m);
+    }
+
+    .milestones {
+      margin-top: var(--space-5xl);
+    }
+
+    .milestone {
+      width: auto;
+    }
+
+    .milestone + .milestone {
+      margin-top: var(--space-2xl);
+    }
+
+    .ending {
+      margin-top: var(--space-8xl);
+    }
+
+    .ending :global(.sprig) {
+      display: none;
+    }
+  }
+</style>

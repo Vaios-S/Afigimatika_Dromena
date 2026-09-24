@@ -54,14 +54,20 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 - Every image is currently a placeholder.
 - `src/data/images.ts` is the single image registry. Each entry has a key, a `src`, `alt` text and a `placeholder` flag. Components reference images by key only, never by path.
-- Real images go in `src/assets/images/`. Replacing a placeholder means dropping the real file in that folder and changing one line in `images.ts`. Nothing else.
-- Real images are rendered with Astro's `<Image>` / `<Picture>`. While `placeholder` is true, `src/assets/placeholders/photo.svg` is shown instead.
+- Real images go in `src/assets/images/`. Each entry's `src` is already the expected file name, so replacing a placeholder means dropping the file in with that name and changing `placeholder: true` to `false`. Nothing else.
+- `src/components/Photo.astro` is the only code that reads the registry. Real images render with Astro's `<Picture>` (AVIF/WebP, responsive widths). While `placeholder` is true, `src/assets/placeholders/photo.svg` is shown with the alt text as a caption. A missing file with `placeholder: false` fails the build with a clear message.
 
 ## Ornaments
 
 - One optimized SVG per ornament in `src/assets/ornaments/`, rendered inline by `src/components/Ornament.astro`.
 - Colors come from `currentColor`. No internal IDs (masks are baked into paths), so an ornament can appear several times on a page.
 - The hand-printed roughness filter and paper grain are defined once in the base layout and applied with CSS.
+
+## Red thread
+
+- `src/scripts/red-thread.ts` is the only client-side JavaScript. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
+- Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write transforms and classes only.
+- Hidden reveal states exist only under `.is-animated`, which the script sets when motion is allowed. Without JavaScript, or with reduced motion, all content is visible.
 
 ## How to change fonts
 

@@ -106,6 +106,21 @@ a:hover {
   color: var(--color-ink-red);
 }
 
+/* "Placeholder text" tag on provisional content (toggled by SHOW_PLACEHOLDER_TAGS). */
+.placeholder-tag {
+  flex: none;
+  padding: var(--space-3xs) 0.375rem;
+  border: var(--rule-hair) dashed currentColor;
+  font-family: var(--font-mono);
+  font-size: var(--text-tag);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-ink-muted);
+}
+
 /* Logo lockup: flower mark + wordmark (header and footer). */
 .brand {
   display: inline-flex;
