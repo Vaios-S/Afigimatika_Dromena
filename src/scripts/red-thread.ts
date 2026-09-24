@@ -58,8 +58,10 @@ const KNOT = {
 const SHAPE = {
   /** Straight drop below the yarn ball before the thread starts curving. */
   startDrop: { desktop: 46, mobile: 20 },
-  /** Desktop: how far right of the verse block the thread passes. */
+  /** Desktop: how far right of the verse block the thread passes, but never
+   *  closer than edgeMargin to the right edge (tablets). */
   introClearance: 70,
+  edgeMargin: 32,
   /** Knot position: below the card's top edge, and (desktop) beside the card.
    *  Beside-distance and swing are capped to a share of the gap between the
    *  card columns, so narrower screens keep the thread inside the gap. */
@@ -227,7 +229,10 @@ function init({ section, intro, ending, cards, balls }: Parts) {
       );
     } else {
       waypoints.push({
-        x: introPos.x + intro.offsetWidth + SHAPE.introClearance,
+        x: Math.min(
+          introPos.x + intro.offsetWidth + SHAPE.introClearance,
+          width - SHAPE.edgeMargin,
+        ),
         y: introPos.y + introH * 0.45,
       });
     }

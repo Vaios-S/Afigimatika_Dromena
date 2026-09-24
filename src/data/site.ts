@@ -6,6 +6,14 @@
 import { contact } from "./contact";
 import type { ImageKey } from "./images";
 
+/**
+ * Launch switch for search engines. While false, every page carries
+ * <meta name="robots" content="noindex, nofollow"> and robots.txt disallows
+ * everything, so preview deployments with placeholder content stay out of
+ * search results. Set to true at launch (see the checklist in CLAUDE.md).
+ */
+export const LAUNCHED = false;
+
 /** Show the "Προσωρινό κείμενο" tags on placeholder content. One switch for the whole site. */
 export const SHOW_PLACEHOLDER_TAGS = true;
 
@@ -18,6 +26,8 @@ export const routes = {
 
 export const site = {
   name: "Αφηγηματικά Δρώμενα",
+  /** Open Graph locale of the Greek site. */
+  locale: "el_GR",
   description:
     "Τρεις αφηγήτριες από τη Θεσσαλονίκη φέρνουν παραμύθια, μύθους και θρύλους απ’ όλο τον κόσμο σε σχολεία, βιβλιοθήκες, φεστιβάλ και πολιτιστικούς χώρους.",
   placeholderTag: "Προσωρινό κείμενο",
@@ -115,6 +125,72 @@ export const redThread = {
     },
   ] satisfies Milestone[],
   ending: { text: "…και το παραμύθι", accent: "συνεχίζεται." },
+};
+
+interface Audience {
+  name: string;
+  /** File name in src/assets/ornaments, without ".svg". */
+  icon: string;
+  /** Only the featured (first) tile shows a note. */
+  note?: string;
+}
+
+export const about = {
+  kicker: "Η ομάδα",
+  title: { text: "Τρεις αφηγήτριες,", accent: "ένα κόκκινο νήμα" },
+  text: "Είμαστε τρεις αφηγήτριες από τη Θεσσαλονίκη. Ερευνούμε λαϊκά παραμύθια, μύθους και θρύλους από κάθε γωνιά του κόσμου και τα λέμε ζωντανά, με τη φωνή και χωρίς βιβλίο στο χέρι, όπως λέγονταν πάντα.",
+  link: { label: "Γνωρίστε την ομάδα", href: routes.team },
+  audiencesTitle: "Πού και για ποιους αφηγούμαστε",
+  /** The first entry is the featured tile. */
+  audiences: [
+    {
+      name: "Παιδιά",
+      icon: "audience-children",
+      note: "Το πρώτο και πιο αγαπημένο μας κοινό.",
+    },
+    { name: "Σχολεία", icon: "audience-schools" },
+    { name: "Βιβλιοθήκες", icon: "audience-libraries" },
+    { name: "Φεστιβάλ", icon: "audience-festivals" },
+    { name: "Καφέ & πολιτιστικοί χώροι", icon: "audience-cafes" },
+    { name: "Δήμοι", icon: "audience-municipalities" },
+    { name: "Ενήλικες", icon: "audience-adults" },
+  ] satisfies Audience[],
+};
+
+export const testimonials = {
+  title: "Τι λένε οι διοργανωτές",
+  /** Quotes are provisional: shows the placeholder tag. */
+  placeholder: true,
+  featured: {
+    quote:
+      "Τα παιδιά έμειναν ακίνητα για μία ώρα και μετά ζητούσαν κι άλλο παραμύθι. Τέτοια ησυχία στο παιδικό τμήμα δεν είχαμε ξαναδεί.",
+    source: "Υπεύθυνη παιδικού τμήματος, Δημοτική Βιβλιοθήκη",
+  },
+  more: [
+    {
+      quote: "Η αφήγηση άνοιξε κουβέντες στην τάξη που κράτησαν εβδομάδες.",
+      source: "Εκπαιδευτικός, Δημοτικό Σχολείο",
+    },
+    {
+      quote:
+        "Γέμισαν την πλατεία με μικρούς και μεγάλους. Θα τις ξανακαλέσουμε σίγουρα.",
+      source: "Οργανωτική επιτροπή, Φεστιβάλ",
+    },
+  ],
+};
+
+export const partners = {
+  title: "Συνεργασίες",
+  /** Shown under each name while logos are missing (with the placeholder tags). */
+  logoPlaceholder: "λογότυπο",
+  list: [
+    "Υπουργείο Πολιτισμού",
+    "European Fairy Tale Route",
+    "Φεστιβάλ Πηλίου",
+    "Λέσχη Αφήγησης Θεσσαλονίκης",
+    "Δημοτική Βιβλιοθήκη Θεσσαλονίκης",
+    "Δήμος Θεσσαλονίκης",
+  ],
 };
 
 export const header = {

@@ -55,7 +55,8 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - Every image is currently a placeholder.
 - `src/data/images.ts` is the single image registry. Each entry has a key, a `src`, `alt` text and a `placeholder` flag. Components reference images by key only, never by path.
 - Real images go in `src/assets/images/`. Each entry's `src` is already the expected file name, so replacing a placeholder means dropping the file in with that name and changing `placeholder: true` to `false`. Nothing else.
-- `src/components/Photo.astro` is the only code that reads the registry. Real images render with Astro's `<Picture>` (AVIF/WebP, responsive widths). While `placeholder` is true, `src/assets/placeholders/photo.svg` is shown with the alt text as a caption. A missing file with `placeholder: false` fails the build with a clear message.
+- The lookup `imageFile(key)` at the bottom of `images.ts` is the only code that resolves files. `src/components/Photo.astro` renders photos with Astro's `<Picture>` (AVIF/WebP, responsive widths); while `placeholder` is true it shows `src/assets/placeholders/photo.svg` with the alt text as a caption. A missing file with `placeholder: false` fails the build with a clear message.
+- The share image (`ogImage`, 1200x630) works the same way. Its placeholder is `src/assets/placeholders/og-image.png` (paper, frame, flower, group name). It was rendered once with the current fonts and is not regenerated if the fonts change. A real image of any size is cropped to 1200x630 at build time.
 
 ## Ornaments
 
@@ -68,6 +69,32 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - `src/scripts/red-thread.ts` is the only client-side JavaScript. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
 - Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write transforms and classes only.
 - Hidden reveal states exist only under `.is-animated`, which the script sets when motion is allowed. Without JavaScript, or with reduced motion, all content is visible.
+
+## SEO and launch
+
+- `site` in `astro.config.mjs` comes from `contact.siteUrl`. Canonical URLs, Open Graph URLs, the sitemap and robots.txt are all built from it.
+- `BaseLayout.astro` outputs the title, description, canonical, Open Graph and Twitter card tags, favicons (`public/favicon.svg`, `public/apple-touch-icon.png`) and JSON-LD (`PerformingGroup`, values from `contact.ts` and `site.ts` only).
+- `@astrojs/sitemap` generates `sitemap-index.xml`. `src/pages/robots.txt.ts` generates `robots.txt`.
+
+### The LAUNCHED flag
+
+`LAUNCHED` in `src/data/site.ts` controls search engine indexing:
+
+- `false` (now): every page has `<meta name="robots" content="noindex, nofollow">` and `robots.txt` disallows everything. Use this for preview deployments with placeholder content.
+- `true`: the robots meta tag is removed, `robots.txt` allows everything and references the sitemap, and pages link to the sitemap.
+
+Note: `Disallow: /` stops crawling, which also means crawlers never read the `noindex` tag. A disallowed URL that is linked from elsewhere can still appear in results as a bare link. For previews that must stay private, also use the hosting platform's password protection or preview settings.
+
+### Pre-launch checklist
+
+1. **Domain:** set `siteUrl` in `src/data/contact.ts` to the real domain (it is `https://afigimatika-dromena.example` now).
+2. **Contact details:** replace every value marked PLACEHOLDER in `contact.ts`: email, phone, address, city, and the Facebook and Instagram URLs.
+3. **Images:** replace every placeholder in `src/data/images.ts` (the milestone photos and `ogImage`), with alt text written for the real images.
+4. **Copy:** replace the provisional milestone, testimonial and partner texts in `site.ts`, and add partner logos.
+5. **Placeholder tags off:** set `SHOW_PLACEHOLDER_TAGS = false` in `site.ts`.
+6. **LAUNCHED on:** set `LAUNCHED = true` in `site.ts`.
+7. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger).
+8. Test the red thread on a real mid-range phone.
 
 ## How to change fonts
 

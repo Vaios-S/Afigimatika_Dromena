@@ -1,0 +1,91 @@
+---
+/**
+ * Collaborations: partner names in simple tiles. Logos come later; until then
+ * a small "λογότυπο" hint shows with the placeholder tags.
+ */
+import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
+---
+
+<section class="partners" aria-labelledby="partners-title">
+  <h2 id="partners-title" class="label title">
+    {partners.title}
+  </h2>
+  <ul class="list" role="list">
+    {partners.list.map((name) => (
+      <li class="tile">
+        <span class="name">{name}</span>
+        {SHOW_PLACEHOLDER_TAGS && (
+          <span class="hint">{partners.logoPlaceholder}</span>
+        )}
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .partners {
+    max-width: calc(var(--width-content) + 2 * var(--space-gutter));
+    margin-inline: auto;
+    padding: calc(var(--space-section) - var(--space-2xs)) var(--space-gutter)
+      var(--space-section);
+  }
+
+  .title {
+    letter-spacing: var(--tracking-label-wide);
+    text-align: center;
+  }
+
+  .list {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-s);
+    margin-top: var(--space-2xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2xs);
+    min-height: 6.875rem;
+    padding: var(--space-s) var(--space-xs);
+    border: var(--rule-hair) solid var(--color-rule-soft);
+    text-align: center;
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--text-name);
+    font-weight: var(--weight-medium);
+    line-height: 1.2;
+    color: var(--color-ink-red);
+    text-wrap: balance;
+  }
+
+  .hint {
+    font-family: var(--font-mono);
+    font-size: var(--text-tag);
+    color: var(--color-ink-muted);
+  }
+
+  @media (width < 1100px) {
+    .list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (width < 760px) {
+    .list {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xs);
+      margin-top: var(--space-l);
+    }
+
+    .tile {
+      min-height: 5.75rem;
+    }
+  }
+</style>

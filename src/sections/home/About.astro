@@ -1,0 +1,235 @@
+---
+/**
+ * "Η ομάδα": short introduction, the audiences we tell stories to (the first
+ * tile is featured and spans two rows on desktop) and the invite button.
+ */
+import Button from "../../components/Button.astro";
+import Ornament from "../../components/Ornament.astro";
+import { about, invite } from "../../data/site";
+
+const [featured, ...others] = about.audiences;
+---
+
+<section class="about" aria-labelledby="about-title">
+  <div class="intro">
+    <div>
+      <p class="label kicker">{about.kicker}</p>
+      <h2 id="about-title" class="title">
+        {about.title.text} <em>{about.title.accent}</em>
+      </h2>
+    </div>
+    <div>
+      <p class="text">{about.text}</p>
+      <a href={about.link.href} class="more">
+        {about.link.label}
+      </a>
+    </div>
+  </div>
+
+  <h3 class="label audiences-title">{about.audiencesTitle}</h3>
+  <ul class="audiences" role="list">
+    <li class="tile featured">
+      <Ornament name={featured.icon} class="icon" />
+      <span class="name">{featured.name}</span>
+      {featured.note && <p class="note">{featured.note}</p>}
+    </li>
+    {others.map((audience) => (
+      <li class="tile">
+        <Ornament name={audience.icon} class="icon" />
+        <span class="name">{audience.name}</span>
+      </li>
+    ))}
+  </ul>
+
+  <div class="cta">
+    <Button href={invite.href} class="cta-button">
+      {invite.label}
+    </Button>
+  </div>
+</section>
+
+<style>
+  .about {
+    max-width: calc(var(--width-content) + 2 * var(--space-gutter));
+    margin-inline: auto;
+    padding: var(--space-section) var(--space-gutter)
+      calc(var(--space-section) + var(--space-2xs));
+  }
+
+  /* Intro -------------------------------------------------------------------- */
+  .intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: var(--space-4xl) calc(var(--space-6xl) + var(--space-s));
+  }
+
+  .kicker,
+  .audiences-title {
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    margin-top: var(--space-s);
+    font-size: var(--text-h2);
+    line-height: var(--leading-display);
+  }
+
+  .text {
+    font-size: var(--text-body-l);
+    line-height: 1.65;
+  }
+
+  .more {
+    display: inline-block;
+    margin-top: var(--space-s);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: 6px;
+  }
+
+  /* Audiences ------------------------------------------------------------------ */
+  .audiences-title {
+    margin-top: calc(var(--space-7xl) + var(--space-2xs));
+    text-align: center;
+  }
+
+  .audiences {
+    display: grid;
+    grid-template-columns: 1.25fr repeat(3, 1fr);
+    gap: var(--space-m);
+    margin-top: var(--space-2xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Double rule: border, paper gap, inner rule. */
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-height: 10.625rem;
+    padding: var(--space-xl) var(--space-m);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    outline: var(--rule-hair) solid var(--color-ink-red);
+    outline-offset: calc(
+      -1 * (var(--rule-thin) + var(--frame-gap) + var(--rule-hair))
+    );
+    text-align: center;
+  }
+
+  .featured {
+    grid-row: span 2;
+    gap: var(--space-s);
+    padding: var(--space-2xl) var(--space-xl);
+    background: var(--color-paper-shade);
+  }
+
+  .icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    color: var(--color-ink-red);
+  }
+
+  .featured .icon {
+    width: 7.5rem;
+    height: 7.5rem;
+  }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: var(--text-tile);
+    font-weight: var(--weight-medium);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .featured .name {
+    font-size: var(--text-tile-lg);
+    line-height: 1;
+  }
+
+  .note {
+    max-width: 15rem;
+    line-height: 1.5;
+  }
+
+  .cta {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-5xl);
+  }
+
+  /* Tablet: three columns, the featured tile across the top. */
+  @media (width < 1100px) {
+    .audiences {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .featured {
+      grid-row: auto;
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Mobile ------------------------------------------------------------------ */
+  @media (width < 760px) {
+    .about {
+      padding-block: var(--space-5xl) var(--space-6xl);
+    }
+
+    .intro {
+      grid-template-columns: 1fr;
+      gap: var(--space-m);
+    }
+
+    .title {
+      margin-top: var(--space-xs);
+    }
+
+    .audiences-title {
+      margin-top: var(--space-3xl);
+      text-align: left;
+    }
+
+    .audiences {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xs);
+      margin-top: var(--space-m);
+    }
+
+    .tile {
+      min-height: 8.125rem;
+      padding: var(--space-l) var(--space-xs);
+      gap: var(--space-2xs);
+    }
+
+    .featured {
+      padding: var(--space-xl) var(--space-m);
+    }
+
+    .icon {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+
+    .featured .icon {
+      width: 5rem;
+      height: 5rem;
+    }
+
+    .cta {
+      margin-top: var(--space-2xl);
+    }
+
+    .cta :global(.cta-button) {
+      flex: 1;
+    }
+  }
+</style>

@@ -1,8 +1,12 @@
 ---
 import "../styles/global.css";
+import { getImage } from "astro:assets";
+import ogPlaceholder from "../assets/placeholders/og-image.png";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
-import { site } from "../data/site";
+import { contact } from "../data/contact";
+import { imageFile, images } from "../data/images";
+import { LAUNCHED, site } from "../data/site";
 
 interface Props {
   /** Page title; the site name is appended. Omit on the homepage. */
@@ -12,6 +16,38 @@ interface Props {
 
 const { title, description = site.description } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
+
+// Absolute URLs are built from `site` in astro.config.mjs (contact.siteUrl).
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = await getImage({
+  src: imageFile("ogImage") ?? ogPlaceholder,
+  width: 1200,
+  height: 630,
+  fit: "cover",
+  format: "jpg",
+});
+const ogImageUrl = new URL(ogImage.src, Astro.site).href;
+
+// Structured data for search engines, from contact.ts and site.ts only.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "PerformingGroup",
+  name: site.name,
+  description: site.description,
+  url: new URL("/", Astro.site).href,
+  image: ogImageUrl,
+  email: contact.email,
+  telephone: contact.phone,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: contact.address,
+    addressLocality: contact.city,
+    addressCountry: contact.country,
+  },
+  sameAs: contact.social.map((link) => link.href),
+};
+// "<" is escaped so the JSON can never close the script tag early.
+const jsonLdScript = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -21,6 +57,31 @@ const pageTitle = title ? `${title} · ${site.name}` : site.name;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {!LAUNCHED && <meta name="robots" content="noindex, nofollow" />}
+    {LAUNCHED && <link rel="sitemap" href="/sitemap-index.xml" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={images.ogImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={jsonLdScript}
+    ></script>
   </head>
   <body>
     <!-- Shared SVG filter: gives ornaments with class="rough" a hand-printed edge. -->

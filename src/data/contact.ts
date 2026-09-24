@@ -16,6 +16,8 @@ export const contact = {
   address: "Οδός Παραδείγματος 1, 546 00",
   /** PLACEHOLDER */
   city: "Θεσσαλονίκη",
+  /** ISO country code, used in structured data. */
+  country: "GR",
   /** PLACEHOLDER URLs */
   social: [
     { label: "Facebook", href: "https://www.facebook.com/" },

@@ -1,0 +1,200 @@
+---
+/**
+ * What organizers say: one featured quote between two quote marks, then
+ * two shorter quotes. Dark section.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { SHOW_PLACEHOLDER_TAGS, site, testimonials } from "../../data/site";
+---
+
+<section class="testimonials" aria-labelledby="testimonials-title">
+  <div class="inner">
+    <div class="head">
+      <h2 id="testimonials-title" class="label title">
+        {testimonials.title}
+      </h2>
+      {SHOW_PLACEHOLDER_TAGS && testimonials.placeholder && (
+        <span class="placeholder-tag">{site.placeholderTag}</span>
+      )}
+    </div>
+
+    <figure class="featured">
+      <Ornament name="quote-mark" class="rough mark" />
+      <div>
+        <blockquote class="featured-quote">
+          <p>{testimonials.featured.quote}</p>
+        </blockquote>
+        <figcaption class="source">{testimonials.featured.source}</figcaption>
+      </div>
+      <Ornament name="quote-mark" class="rough mark mark-end" />
+    </figure>
+
+    <ul class="more" role="list">
+      {testimonials.more.map((item) => (
+        <li>
+          <figure>
+            <blockquote class="quote">
+              <p>{item.quote}</p>
+            </blockquote>
+            <figcaption class="source">{item.source}</figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .testimonials {
+    --color-focus: var(--color-paper);
+
+    padding: var(--space-section) var(--space-gutter)
+      calc(var(--space-section) + var(--space-2xs));
+    background: var(--color-oxblood) var(--texture-grain);
+    color: var(--color-paper);
+  }
+
+  .inner {
+    max-width: var(--width-wide);
+    margin-inline: auto;
+  }
+
+  .head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    letter-spacing: var(--tracking-label-wide);
+    color: inherit;
+  }
+
+  .title::before,
+  .title::after {
+    content: "";
+    width: var(--space-2xl);
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .head .placeholder-tag {
+    color: inherit;
+  }
+
+  /* Featured quote ------------------------------------------------------------ */
+  .featured {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-xl);
+    margin: var(--space-4xl) 0 0;
+    text-align: center;
+  }
+
+  .mark {
+    flex: none;
+    width: 2.75rem;
+    height: auto;
+  }
+
+  .mark-end {
+    transform: scaleX(-1);
+  }
+
+  .featured-quote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-quote);
+    font-style: italic;
+    line-height: var(--leading-quote);
+    text-wrap: pretty;
+  }
+
+  .source {
+    margin-top: var(--space-xl);
+    font-family: var(--font-display);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  /* More quotes ---------------------------------------------------------------- */
+  .more {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4xl);
+    margin-top: calc(var(--space-7xl) - var(--space-2xs));
+    padding: 0;
+    list-style: none;
+  }
+
+  .more figure {
+    margin: 0;
+    padding-top: var(--space-l);
+    border-top: var(--rule-hair) solid var(--color-rule-on-dark);
+  }
+
+  .quote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-quote-sm);
+    font-style: italic;
+    line-height: 1.35;
+  }
+
+  /* Greek quotation marks come from the language (lang="el"). */
+  .quote p::before {
+    content: open-quote;
+  }
+
+  .quote p::after {
+    content: close-quote;
+  }
+
+  .more .source {
+    margin-top: var(--space-s);
+  }
+
+  /* Mobile ------------------------------------------------------------------ */
+  @media (width < 760px) {
+    .testimonials {
+      padding-block: var(--space-6xl) calc(var(--space-6xl) + var(--space-2xs));
+    }
+
+    .title::before,
+    .title::after {
+      display: none;
+    }
+
+    .featured {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-m);
+      margin-top: var(--space-2xl);
+    }
+
+    .mark-end {
+      display: none;
+    }
+
+    .source {
+      margin-top: var(--space-m);
+    }
+
+    .more {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+      margin-top: var(--space-4xl);
+    }
+
+    .more figure {
+      padding-top: var(--space-m);
+    }
+  }
+</style>

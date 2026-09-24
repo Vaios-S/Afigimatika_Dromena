@@ -49,6 +49,16 @@
   --text-body-l: clamp(1.0625rem, 0.993rem + 0.286vw, 1.25rem); /* 17 → 20 */
   --text-body: clamp(1rem, 0.977rem + 0.095vw, 1.0625rem); /* 16 → 17 */
   --text-button: clamp(0.9375rem, 0.914rem + 0.095vw, 1rem); /* 15 → 16 */
+  --text-name: clamp(
+    1rem,
+    0.954rem + 0.19vw,
+    1.125rem
+  ); /* 16 → 18, partner names */
+  --text-caption: clamp(
+    0.75rem,
+    0.704rem + 0.19vw,
+    0.875rem
+  ); /* 12 → 14, quote credits */
   --text-kicker: clamp(0.8125rem, 0.72rem + 0.381vw, 1.0625rem); /* 13 → 17 */
   --text-label: clamp(0.8125rem, 0.766rem + 0.19vw, 0.9375rem); /* 13 → 15 */
   --text-small: clamp(0.875rem, 0.852rem + 0.095vw, 0.9375rem); /* 14 → 15 */
