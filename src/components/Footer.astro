@@ -1,0 +1,241 @@
+---
+import { contact, emailHref, phoneHref } from "../data/contact";
+import { footer, invite, routes, site } from "../data/site";
+import Button from "./Button.astro";
+import Ornament from "./Ornament.astro";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="inner">
+    <div class="cta">
+      <h2 class="cta-heading">
+        {footer.cta.heading.text} <em>{footer.cta.heading.accent}</em>
+      </h2>
+      <Button href={invite.href} class="cta-button">
+        {invite.label}
+      </Button>
+    </div>
+
+    <div class="divider">
+      <Ornament name="crest" class="crest" />
+    </div>
+
+    <div class="columns">
+      <div class="about">
+        <a href={routes.home} class="brand">
+          <Ornament name="flower" />
+          <span>{site.name}</span>
+        </a>
+        <p class="tagline">
+          {contact.city} · {footer.tagline}
+        </p>
+      </div>
+
+      <nav class="column site-nav" aria-labelledby="footer-site">
+        <h2 id="footer-site" class="label">
+          {footer.siteNav.title}
+        </h2>
+        <ul role="list">
+          {footer.siteNav.links.map((link) => (
+            <li>
+              <a href={link.href}>{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="column contact">
+        <h2 class="label">{footer.contactTitle}</h2>
+        <ul role="list">
+          <li>
+            <a href={emailHref}>{contact.email}</a>
+          </li>
+          <li>
+            <a href={phoneHref}>{contact.phone}</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="column social">
+        <h2 class="label">{footer.socialTitle}</h2>
+        <ul role="list">
+          {contact.social.map((link) => (
+            <li>
+              <a href={link.href}>{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <p>
+        © {year} {site.name}
+      </p>
+      <p>{footer.languages}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: 0 var(--space-gutter) var(--space-2xl);
+  }
+
+  .inner {
+    max-width: var(--width-content);
+    margin-inline: auto;
+  }
+
+  .cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    padding-block: var(--space-7xl) var(--space-6xl);
+    text-align: center;
+  }
+
+  .cta-heading {
+    max-width: 51.25rem;
+    font-size: var(--text-cta);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    color: var(--color-ink-red);
+  }
+
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    height: var(--rule-hair);
+    background: currentColor;
+  }
+
+  .divider :global(.crest) {
+    flex: none;
+    width: 18.75rem;
+    height: auto;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr 1fr;
+    grid-template-areas: "about site contact social";
+    gap: var(--space-4xl);
+    margin-top: var(--space-4xl);
+  }
+
+  .about {
+    grid-area: about;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+  }
+
+  .site-nav {
+    grid-area: site;
+  }
+
+  .contact {
+    grid-area: contact;
+  }
+
+  .social {
+    grid-area: social;
+  }
+
+  .tagline {
+    max-width: 22.5rem;
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .column ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    margin-top: var(--space-s);
+    padding: 0;
+    list-style: none;
+  }
+
+  .column a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .column a:hover {
+    color: var(--color-ink-red);
+  }
+
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-xs) var(--space-l);
+    margin-top: var(--space-5xl);
+    padding-top: var(--space-m);
+    border-top: var(--rule-hair) solid var(--color-ink-red);
+    font-size: var(--text-small);
+    color: var(--color-ink-muted);
+  }
+
+  /* Tablet: brand on its own row. */
+  @media (width < 1100px) {
+    .columns {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-areas:
+        "about about about"
+        "site contact social";
+      gap: var(--space-xl);
+    }
+  }
+
+  @media (width < 760px) {
+    .footer {
+      padding-bottom: var(--space-xl);
+    }
+
+    .cta {
+      gap: var(--space-l);
+      padding-block: var(--space-5xl) var(--space-3xl);
+    }
+
+    .cta :global(.cta-button) {
+      align-self: stretch;
+    }
+
+    .divider::before,
+    .divider::after {
+      display: none;
+    }
+
+    .divider :global(.crest) {
+      width: auto;
+      height: 2.875rem;
+      margin-inline: auto;
+    }
+
+    .columns {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "about about"
+        "site social"
+        "contact contact";
+      gap: var(--space-xl) var(--space-m);
+    }
+
+    .bottom {
+      margin-top: var(--space-2xl);
+    }
+  }
+</style>

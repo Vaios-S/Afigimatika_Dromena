@@ -63,6 +63,12 @@ h3 {
   line-height: var(--leading-title);
 }
 
+/* Display headings set their italic accent phrase in red. */
+h1 em,
+h2 em {
+  color: var(--color-ink-red);
+}
+
 p {
   text-wrap: pretty;
 }
@@ -98,6 +104,31 @@ a:hover {
   line-height: 1.5;
   text-transform: uppercase;
   color: var(--color-ink-red);
+}
+
+/* Logo lockup: flower mark + wordmark (header and footer). */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-display);
+  font-size: var(--text-logo);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+
+.brand svg {
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  color: var(--color-ink-red);
+}
+
+.brand:hover {
+  color: var(--color-ink);
 }
 
 .visually-hidden:not(:focus-within, :active) {

@@ -1,0 +1,164 @@
+---
+/**
+ * Site header. One nav: inline on desktop, a native popover sheet on mobile
+ * (no JavaScript; Esc and clicking outside close it).
+ */
+import { header, invite, routes, site } from "../data/site";
+import Button from "./Button.astro";
+import Ornament from "./Ornament.astro";
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const current = (href: string) => (path === href ? "page" : undefined);
+---
+
+<header class="header">
+  <a href={routes.home} class="brand" aria-current={current(routes.home)}>
+    <Ornament name="flower" />
+    <span>{site.name}</span>
+  </a>
+
+  <Button
+    class="menu-toggle"
+    variant="secondary"
+    size="sm"
+    popovertarget="site-menu"
+  >
+    {header.menuOpen}
+  </Button>
+
+  <div id="site-menu" class="menu" popover>
+    <Button
+      class="menu-close"
+      variant="secondary"
+      size="sm"
+      popovertarget="site-menu"
+      popovertargetaction="hide"
+    >
+      {header.menuClose}
+    </Button>
+    <nav aria-label={header.navLabel}>
+      <ul class="nav-list" role="list">
+        {header.nav.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="nav-link"
+              aria-current={current(link.href)}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <Button href={invite.href} size="sm" aria-current={current(invite.href)}>
+      {invite.label}
+    </Button>
+  </div>
+</header>
+
+<style>
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-l);
+    max-width: var(--width-page);
+    margin-inline: auto;
+    padding: var(--space-m) max(var(--space-frame), var(--space-m));
+  }
+
+  .nav-list {
+    display: flex;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-link {
+    font-family: var(--font-display);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+
+  .nav-link:hover,
+  .nav-link[aria-current="page"] {
+    color: var(--color-ink-red);
+  }
+
+  /* Mobile: toggle + popover sheet */
+  .menu:popover-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xl);
+    inset: 0 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: var(--space-m) var(--space-m) var(--space-xl);
+    border: 0;
+    border-bottom: var(--rule-thick) double var(--color-ink-red);
+    background: var(--color-paper) var(--texture-grain);
+    color: var(--color-ink);
+  }
+
+  .menu::backdrop {
+    background: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+
+  .menu :global(.menu-close) {
+    align-self: flex-end;
+  }
+
+  .menu .nav-list {
+    flex-direction: column;
+    gap: var(--space-l);
+  }
+
+  .menu .nav-link {
+    font-size: var(--text-tile);
+  }
+
+  /* Wide screens: the popover is shown inline as a plain nav.
+     The full nav needs about 1050px, so the header keeps the menu button
+     up to 1100px (the rest of the page switches layout at 760px). */
+  @media (width >= 1100px) {
+    .header :global(.menu-toggle),
+    .header :global(.menu-close) {
+      display: none;
+    }
+
+    .menu,
+    .menu:popover-open {
+      position: static;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-xl);
+      width: auto;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      background: none;
+      color: inherit;
+    }
+
+    .menu::backdrop {
+      display: none;
+    }
+
+    .menu .nav-list {
+      flex-direction: row;
+      gap: var(--space-xl);
+    }
+
+    .menu .nav-link {
+      font-size: var(--text-label);
+    }
+  }
+</style>

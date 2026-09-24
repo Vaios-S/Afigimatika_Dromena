@@ -1,0 +1,26 @@
+---
+/**
+ * Renders a decorative SVG from src/assets/ornaments inline, so it takes its
+ * color from `currentColor`. Always hidden from assistive technology.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+type SvgComponent = (props: Record<string, unknown>) => unknown;
+
+interface Props extends HTMLAttributes<"svg"> {
+  /** File name in src/assets/ornaments, without ".svg". */
+  name: string;
+}
+
+const files = import.meta.glob<SvgComponent>("../assets/ornaments/*.svg", {
+  eager: true,
+  import: "default",
+});
+
+const { name, ...attrs } = Astro.props;
+const Svg = files[`../assets/ornaments/${name}.svg`];
+if (!Svg)
+  throw new Error(`Ornament "${name}" not found in src/assets/ornaments`);
+---
+
+<Svg {...attrs} aria-hidden="true" focusable="false" />

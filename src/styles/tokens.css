@@ -78,10 +78,12 @@
   --space-l: 1.5rem; /* 24 */
   --space-xl: 2rem; /* 32 */
   --space-2xl: 2.5rem; /* 40 */
-  --space-3xl: 3.5rem; /* 56 */
-  --space-4xl: 4.5rem; /* 72 */
-  --space-5xl: 6rem; /* 96 */
-  --space-6xl: 8rem; /* 128 */
+  --space-3xl: 3rem; /* 48 */
+  --space-4xl: 3.5rem; /* 56 */
+  --space-5xl: 4rem; /* 64 */
+  --space-6xl: 4.5rem; /* 72 */
+  --space-7xl: 6rem; /* 96 */
+  --space-8xl: 8rem; /* 128 */
 
   --space-gutter: clamp(1.25rem, -0.329rem + 6.476vw, 5.5rem); /* 20 → 88 */
   --space-frame: clamp(
@@ -110,6 +112,17 @@
   --rule-thick: 3px;
   --frame-gap: 5px; /* paper gap inside tiles and cards */
   --frame-gap-hero: 8px;
+
+  /* ------------------------------------------------------------------------
+     Buttons
+     ------------------------------------------------------------------------ */
+  --size-touch: 2.75rem; /* 44, minimum target size */
+  --button-padding: 1.125rem 2rem;
+  --button-padding-sm: 0.8125rem 1.375rem;
+  --button-padding-mobile: 1rem 1.25rem;
+  --button-padding-sm-mobile: 0.625rem 0.875rem;
+  --button-ring: 4px; /* inner paper rule offset */
+  --button-ring-sm: 3px;
 
   /* ------------------------------------------------------------------------
      Red thread
