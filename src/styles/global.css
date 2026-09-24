@@ -131,6 +131,13 @@ a:hover {
   color: var(--color-ink);
 }
 
+/* Hand-printed edge for ornaments; the filter is defined once in BaseLayout.
+   Applied to the shapes inside the SVG so the effect is the same in every
+   browser. */
+.rough > * {
+  filter: url(#rough);
+}
+
 .visually-hidden:not(:focus-within, :active) {
   position: absolute;
   width: 1px;

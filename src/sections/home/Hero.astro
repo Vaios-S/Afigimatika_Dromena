@@ -1,0 +1,245 @@
+---
+/**
+ * Homepage hero: a double-ruled frame with floral corners, a crest on the top
+ * edge and the yarn ball on the bottom edge (the red thread starts there).
+ */
+import Button from "../../components/Button.astro";
+import Ornament from "../../components/Ornament.astro";
+import { hero, invite } from "../../data/site";
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <Ornament name="corner" class="corner rough top-left" />
+  <Ornament name="corner" class="corner rough top-right" />
+  <Ornament name="corner" class="corner rough bottom-left" />
+  <Ornament name="corner" class="corner rough bottom-right" />
+  <Ornament name="corner-small" class="corner-small rough top-left" />
+  <Ornament name="corner-small" class="corner-small rough bottom-right" />
+
+  <div class="crest crest-top">
+    <Ornament name="crest" class="rough" />
+  </div>
+  <div class="crest crest-bottom">
+    <Ornament name="crest-yarn" class="rough crest-yarn" />
+    <Ornament name="yarn-ball" class="rough yarn-ball" />
+  </div>
+
+  <div class="content">
+    <p class="label kicker">{hero.kicker}</p>
+    <h1 id="hero-title" class="title">
+      {hero.title.map((line, i) => (
+        <>
+          {i > 0 && <br />}
+          {line.accent ? <em>{line.text}</em> : line.text}
+        </>
+      ))}
+    </h1>
+    <p class="lead">{hero.lead}</p>
+    <div class="actions">
+      <Button href={invite.href}>{invite.label}</Button>
+      <Button href={hero.secondaryAction.href} variant="secondary">
+        {hero.secondaryAction.label}
+      </Button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    /* Corner size: 150px at 760 (as on mobile), 270px at the 1440 frame. */
+    --corner: clamp(9.375rem, 1rem + 17.65vw, 16.875rem);
+    --corner-inset: var(--space-m);
+
+    position: relative;
+    /* Same edges as the header content: page width capped, frame inset. */
+    margin-block: var(--space-m) var(--space-5xl);
+    margin-inline: max(
+      var(--space-frame),
+      calc((100% - var(--width-page)) / 2 + var(--space-frame))
+    );
+    padding: var(--space-section) var(--space-6xl)
+      calc(var(--space-section) - var(--space-2xs));
+    border: var(--rule-thick) solid var(--color-ink-red);
+    /* Inner rule, drawn inside the border with a paper gap. */
+    outline: var(--rule-thin) solid var(--color-ink-red);
+    outline-offset: calc(
+      -1 * (var(--rule-thick) + var(--frame-gap-hero) + var(--rule-thin))
+    );
+    color: var(--color-ink-red);
+  }
+
+  /* Corners ---------------------------------------------------------------- */
+  .corner,
+  .corner-small {
+    position: absolute;
+    width: var(--corner);
+    height: var(--corner);
+    pointer-events: none;
+  }
+
+  .corner-small {
+    display: none;
+    --corner: 9.375rem;
+  }
+
+  .top-left {
+    top: var(--corner-inset);
+    left: var(--corner-inset);
+  }
+
+  .top-right {
+    top: var(--corner-inset);
+    right: var(--corner-inset);
+    transform: scaleX(-1);
+  }
+
+  .bottom-left {
+    bottom: var(--corner-inset);
+    left: var(--corner-inset);
+    transform: scaleY(-1);
+  }
+
+  .bottom-right {
+    right: var(--corner-inset);
+    bottom: var(--corner-inset);
+    transform: scale(-1);
+  }
+
+  /* Crests on the frame edges; the paper background interrupts the rules. */
+  .crest {
+    position: absolute;
+    left: 50%;
+    display: flex;
+    padding-inline: var(--space-xs);
+    background: var(--color-paper) var(--texture-grain);
+  }
+
+  .crest :global(svg) {
+    width: 18.75rem;
+    height: auto;
+  }
+
+  .crest-top {
+    top: calc(var(--rule-thick) / -2);
+    transform: translate(-50%, -50%);
+  }
+
+  .crest-bottom {
+    bottom: calc(var(--rule-thick) / -2);
+    transform: translate(-50%, 50%);
+  }
+
+  .crest-bottom :global(.yarn-ball) {
+    display: none;
+  }
+
+  /* Content ---------------------------------------------------------------- */
+  .content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 61.25rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    font-size: var(--text-kicker);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .kicker::before,
+  .kicker::after {
+    content: "";
+    width: var(--space-3xl);
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .title {
+    margin-top: var(--space-xl);
+    font-size: var(--text-hero);
+    line-height: var(--leading-hero);
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  .lead {
+    max-width: 40rem;
+    margin-top: var(--space-xl);
+    font-size: var(--text-body-l);
+    color: var(--color-ink);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-m);
+    margin-top: var(--space-2xl);
+  }
+
+  /* Kicker side rules need the full width; drop them where corners get close. */
+  @media (width < 1100px) {
+    .kicker::before,
+    .kicker::after {
+      display: none;
+    }
+  }
+
+  /* Mobile ------------------------------------------------------------------ */
+  @media (width < 760px) {
+    .hero {
+      --corner-inset: var(--space-xs);
+
+      margin-block: var(--space-l) var(--space-2xl);
+      padding: calc(var(--corner) + var(--space-m)) var(--space-m)
+        calc(var(--space-8xl) + var(--space-2xl));
+      outline-width: var(--rule-hair);
+      outline-offset: calc(
+        -1 * (var(--rule-thick) + var(--frame-gap) + var(--rule-hair))
+      );
+    }
+
+    .corner {
+      display: none;
+    }
+
+    .corner-small {
+      display: block;
+    }
+
+    .crest {
+      padding-inline: var(--space-2xs);
+    }
+
+    .crest-top :global(svg) {
+      width: 11.875rem;
+    }
+
+    .crest-bottom :global(.crest-yarn) {
+      display: none;
+    }
+
+    .crest-bottom :global(.yarn-ball) {
+      display: block;
+      width: 2.25rem;
+    }
+
+    .title,
+    .lead {
+      margin-top: var(--space-m);
+    }
+
+    .actions {
+      flex-direction: column;
+      align-self: stretch;
+      gap: var(--space-xs);
+      margin-top: var(--space-xl);
+    }
+  }
+</style>

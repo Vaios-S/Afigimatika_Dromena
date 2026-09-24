@@ -3,6 +3,7 @@
  * Labels shown in capitals are stored in normal case and uppercased by CSS.
  * Never use em dashes in copy (ESLint enforces this).
  */
+import { contact } from "./contact";
 
 /** Show the "Προσωρινό κείμενο" tags on placeholder content. One switch for the whole site. */
 export const SHOW_PLACEHOLDER_TAGS = true;
@@ -28,6 +29,18 @@ const pages = {
   team: { label: "Η ομάδα", href: routes.team },
   news: { label: "Νέα & Εκδηλώσεις", href: routes.news },
   contact: { label: "Επικοινωνία", href: routes.invite },
+};
+
+export const hero = {
+  kicker: `Αφήγηση παραμυθιών · ${contact.city}`,
+  /** One entry per line; `accent` lines are set in red italic. */
+  title: [
+    { text: "Παραμύθια, μύθοι" },
+    { text: "και θρύλοι", accent: true },
+    { text: "απ’ όλο τον κόσμο." },
+  ],
+  lead: "Τρεις αφηγήτριες φέρνουν τα παραμύθια του κόσμου σε σχολεία, βιβλιοθήκες, φεστιβάλ και κάθε χώρο που θέλει να τα ακούσει.",
+  secondaryAction: { label: "Γνωρίστε την ομάδα", href: routes.team },
 };
 
 export const header = {

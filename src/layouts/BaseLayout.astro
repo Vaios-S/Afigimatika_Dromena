@@ -23,6 +23,18 @@ const pageTitle = title ? `${title} · ${site.name}` : site.name;
     <meta name="description" content={description} />
   </head>
   <body>
+    <!-- Shared SVG filter: gives ornaments with class="rough" a hand-printed edge. -->
+    <svg class="svg-defs" aria-hidden="true" focusable="false">
+      <filter id="rough" x="-3%" y="-3%" width="106%" height="106%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.8"
+          numOctaves="2"
+          seed="4"
+        ></feTurbulence>
+        <feDisplacementMap in="SourceGraphic" scale="2.4"></feDisplacementMap>
+      </filter>
+    </svg>
     <a href="#main" class="skip-link">
       {site.skipLink}
     </a>
@@ -35,6 +47,13 @@ const pageTitle = title ? `${title} · ${site.name}` : site.name;
 </html>
 
 <style>
+  .svg-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
   .skip-link {
     position: absolute;
     top: var(--space-s);

@@ -34,6 +34,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - Minimal, clean code. As few components as possible, no abstractions until they are needed.
 - JavaScript only where required (the red thread scroll animation). Everything else is static HTML and CSS.
 - Colors, fonts and spacing come only from tokens in `src/styles/tokens.css`. No raw values in components.
+- Inside `.astro` `<style>` blocks, keep each CSS comment on one line. prettier-plugin-astro re-indents the continuation lines of multi-line comments on every run, so `npm run lint` never settles.
 - Semantic HTML and accessibility: AA contrast, visible focus states, alt text on images, `aria-hidden="true"` on decorative SVGs, respect `prefers-reduced-motion`.
 
 ## Content

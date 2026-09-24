@@ -68,6 +68,13 @@ const current = (href: string) => (path === href ? "page" : undefined);
     padding: var(--space-m) max(var(--space-frame), var(--space-m));
   }
 
+  /* Narrow screens (320 to 380px): let the wordmark wrap. */
+  @media (width < 380px) {
+    .brand {
+      white-space: normal;
+    }
+  }
+
   .nav-list {
     display: flex;
     padding: 0;
@@ -123,9 +130,8 @@ const current = (href: string) => (path === href ? "page" : undefined);
     font-size: var(--text-tile);
   }
 
-  /* Wide screens: the popover is shown inline as a plain nav.
-     The full nav needs about 1050px, so the header keeps the menu button
-     up to 1100px (the rest of the page switches layout at 760px). */
+  /* Wide screens: the popover is shown inline as a plain nav. */
+  /* The header keeps the menu button below 1100px; the page itself switches at 760px. */
   @media (width >= 1100px) {
     .menu-toggle,
     .menu-close {
