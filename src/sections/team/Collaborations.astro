@@ -1,0 +1,246 @@
+---
+/**
+ * Collaborations and programs on /omada: an index in numbered groups, on the
+ * oxblood background. Flows straight into the footer's invitation.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import { team } from "../../data/team";
+
+const { collaborations } = team;
+---
+
+<section class="collaborations" aria-labelledby="collaborations-title">
+  <div class="head">
+    <p class="label kicker">{collaborations.label}</p>
+    <h2 id="collaborations-title" class="title">
+      {collaborations.title.text} <em>{collaborations.title.accent}</em>
+    </h2>
+    {SHOW_PLACEHOLDER_TAGS && collaborations.placeholder && (
+      <span class="placeholder-tag">{site.placeholderTag}</span>
+    )}
+  </div>
+
+  <div class="groups">
+    {collaborations.groups.map((group) => (
+      <section class="group" aria-labelledby={`group-${group.numeral}`}>
+        <div class="group-head">
+          <span class="numeral" aria-hidden="true">
+            {group.numeral}
+          </span>
+          <h3 id={`group-${group.numeral}`} class="label group-title">
+            {group.title}
+          </h3>
+        </div>
+        <ul class="entries" role="list">
+          {group.items.map((item) => (
+            <li class="entry">
+              <Ornament name="oak-leaf" class="leaf" />
+              <div>
+                <p class="entry-name">
+                  {item.name}
+                  {SHOW_PLACEHOLDER_TAGS && item.placeholder && (
+                    <span class="placeholder-tag">{site.placeholderTag}</span>
+                  )}
+                </p>
+                <p class="entry-text">{item.text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <Ornament name="oak-rule" class="end-rule" />
+</section>
+
+<style>
+  .collaborations {
+    --color-focus: var(--color-paper);
+
+    padding: var(--space-section) var(--space-gutter) var(--space-7xl);
+    background: var(--color-oxblood) var(--texture-grain);
+    color: var(--color-paper);
+  }
+
+  /* Heading -------------------------------------------------------------------- */
+  .head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    letter-spacing: var(--tracking-label-wide);
+    color: inherit;
+  }
+
+  .kicker::before,
+  .kicker::after {
+    content: "";
+    width: var(--space-2xl);
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .title {
+    margin-top: var(--space-s);
+    font-size: var(--text-h2);
+    line-height: 1.06;
+  }
+
+  /* On oxblood the accent stays paper; the global red would be unreadable. */
+  .title em {
+    color: inherit;
+  }
+
+  .head .placeholder-tag {
+    margin-top: var(--space-m);
+    color: inherit;
+  }
+
+  /* Groups --------------------------------------------------------------------- */
+  .groups {
+    max-width: 70rem;
+    margin: var(--space-6xl) auto 0;
+  }
+
+  /* Double rule on top: paper, then a thin darker line. */
+  .group {
+    display: grid;
+    grid-template-columns: 18.75rem minmax(0, 1fr);
+    gap: var(--space-6xl);
+    padding-block: var(--space-3xl) calc(var(--space-3xl) + var(--space-3xs));
+    border-top: var(--rule-thin) solid var(--color-paper);
+    box-shadow:
+      inset 0 var(--space-3xs) 0 var(--color-oxblood),
+      inset 0 calc(var(--space-3xs) + var(--rule-hair)) 0
+        var(--color-rule-on-dark);
+  }
+
+  .numeral {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-numeral);
+    line-height: 1;
+  }
+
+  .group-title {
+    max-width: 16.25rem;
+    margin-top: var(--space-s);
+    color: inherit;
+    line-height: 1.45;
+  }
+
+  .entries {
+    padding: 0;
+    list-style: none;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-m);
+    padding-block: var(--space-m);
+    border-bottom: var(--rule-hair) solid var(--color-rule-on-dark);
+  }
+
+  .entry :global(.leaf) {
+    width: 2rem;
+    height: 1.0625rem;
+    margin-top: var(--space-2xs);
+  }
+
+  .entry-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs) var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-entry);
+    font-weight: var(--weight-medium);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .entry-name .placeholder-tag {
+    color: inherit;
+  }
+
+  .entry-text {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-body-l);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .collaborations :global(.end-rule) {
+    display: block;
+    width: 18.75rem;
+    height: 2.75rem;
+    margin: var(--space-2xl) auto 0;
+  }
+
+  /* Tablet and mobile: numeral and title on one line above the entries. */
+  @media (width < 1100px) {
+    .group {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-xs);
+      padding-block: var(--space-xl) calc(var(--space-xl) + var(--space-3xs));
+    }
+
+    .group-head {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-s);
+    }
+
+    .group-title {
+      max-width: none;
+      margin-top: 0;
+    }
+  }
+
+  @media (width < 760px) {
+    .collaborations {
+      padding-block: calc(var(--space-6xl) + var(--space-2xs)) var(--space-5xl);
+    }
+
+    .kicker::before,
+    .kicker::after {
+      display: none;
+    }
+
+    .title {
+      margin-top: var(--space-xs);
+    }
+
+    .groups {
+      margin-top: calc(var(--space-2xl) + var(--space-3xs));
+    }
+
+    .entry {
+      grid-template-columns: 1.625rem minmax(0, 1fr);
+      gap: var(--space-xs);
+      padding-block: var(--space-s);
+    }
+
+    .entry :global(.leaf) {
+      width: 1.625rem;
+      height: 0.875rem;
+      margin-top: var(--space-2xs);
+    }
+
+    .collaborations :global(.end-rule) {
+      width: 13.75rem;
+      height: 2rem;
+      margin-top: var(--space-l);
+    }
+  }
+</style>

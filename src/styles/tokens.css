@@ -42,6 +42,16 @@
     5.75rem
   ); /* 44 → 92, inner page h1 */
   --text-h2: clamp(2.375rem, 1.818rem + 2.286vw, 3.875rem); /* 38 → 62 */
+  --text-numeral: clamp(
+    2.75rem,
+    2.193rem + 2.286vw,
+    4.25rem
+  ); /* 44 → 68, roman numerals */
+  --text-entry: clamp(
+    1.375rem,
+    1.236rem + 0.571vw,
+    1.75rem
+  ); /* 22 → 28, index entries */
   --text-person: clamp(
     2.25rem,
     1.832rem + 1.714vw,
