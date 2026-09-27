@@ -88,9 +88,18 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 ## Red thread
 
-- `src/scripts/red-thread.ts` is the only client-side JavaScript. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
+- `src/scripts/red-thread.ts` (homepage) is one of two client-side scripts; the other is the storytellers sequence below. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
 - Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write transforms and classes only.
 - Hidden reveal states exist only under `.is-animated`, which the script sets when motion is allowed. Without JavaScript, or with reduced motion, all content is visible.
+
+## Storytellers sequence (/omada)
+
+- `src/scripts/storytellers.ts` adds `.is-sequence` to the storytellers section: the frame is pinned with `position: sticky` (native scrolling, no hijacking or snapping), the three profiles share one grid cell and one is shown at a time. Everything styled under `.is-sequence` in `Storytellers.astro` belongs to that mode.
+- Scroll position only picks which storyteller is active, with hysteresis at the boundaries. The change itself is a CSS transition with its own timing, so it stays soft on a fast scroll.
+- Tunables: scroll distance per storyteller, hysteresis, fit margin and click lock are named constants at the top of `storytellers.ts`; transition durations, delay, easing and rise are the `--sequence-*` variables in `tokens.css`.
+- The step buttons are real `<button>`s with `aria-current="step"`; clicking one scrolls smoothly to that storyteller.
+- Fallback to the stacked list (the markup as written): no JavaScript, `prefers-reduced-motion`, or a frame taller than the screen. The fit is measured on resize and font load, never in the scroll loop.
+- **Bio length: at most 220 characters** (spaces included), and three favourite tales of up to about 35 characters each. Longer text makes the frame too tall for a typical phone (375x667, iPhone Safari 390x664) or a short laptop screen (1366x650), which then get the stacked list. Measured limits were 226 to 247 characters. Very short screens (360x640, 1280x600, iPhone SE in Safari) always get the stacked list.
 
 ## SEO and launch
 

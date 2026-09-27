@@ -1,5 +1,9 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    // Every file is its own module, so client scripts can't clash by name.
+    "moduleDetection": "force"
+  },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist", "design"]
 }

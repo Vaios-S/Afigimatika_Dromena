@@ -8,8 +8,14 @@ import type { ImageKey } from "./images";
 
 interface Storyteller {
   name: string;
+  /**
+   * At most 220 characters, spaces included. Longer bios no longer fit the
+   * pinned frame on a typical phone (375x667, iPhone Safari 390x664) or a
+   * short laptop screen (1366x650), and those screens then get the stacked
+   * list instead of the sequence. Measured limits: 226 to 247 characters.
+   */
   bio: string;
-  /** Favourite tales, shown as a short list (three read best). */
+  /** Favourite tales: three, each up to about 35 characters (one line on a phone). */
   tales: string[];
   /** Key in src/data/images.ts. */
   portrait: ImageKey;
@@ -44,6 +50,8 @@ export const team = {
     /** "{n}" and "{total}" are replaced with the storyteller's position. */
     counter: "Αφηγήτρια {n} από {total}",
     talesTitle: "Αγαπημένα παραμύθια",
+    /** Accessible name of the step buttons under the pinned frame. */
+    navLabel: "Οι τρεις αφηγήτριες",
     list: [
       {
         name: "Στέλλα Στιβαχτάρη",

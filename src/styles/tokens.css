@@ -162,6 +162,17 @@
   --thread-end-duration: 800ms; /* bow and closing line fade */
 
   /* ------------------------------------------------------------------------
+     Storytellers sequence (/omada)
+     Scroll distance and hysteresis live in src/scripts/storytellers.ts.
+     The change is time-based: scroll only picks who is shown.
+     ------------------------------------------------------------------------ */
+  --sequence-in-duration: 700ms; /* incoming storyteller fades and rises in */
+  --sequence-in-delay: 120ms; /* lets the outgoing one start fading first */
+  --sequence-out-duration: 320ms; /* outgoing storyteller fades out */
+  --sequence-easing: cubic-bezier(0.33, 0, 0.2, 1);
+  --sequence-rise: 10px; /* incoming parts rise this far */
+
+  /* ------------------------------------------------------------------------
      Motion
      ------------------------------------------------------------------------ */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);

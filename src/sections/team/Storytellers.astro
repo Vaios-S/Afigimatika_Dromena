@@ -4,6 +4,10 @@
  * storyteller's corner drawing, bio and favourite tales. Wide screens
  * alternate the portrait left and right; narrower screens stack it on top.
  * This is also the version shown without JavaScript or with reduced motion.
+ *
+ * With JavaScript, src/scripts/storytellers.ts adds .is-sequence: the frame
+ * is pinned while the page scrolls, one storyteller shows at a time and the
+ * step buttons appear. Everything under .is-sequence below is that mode.
  */
 import Ornament from "../../components/Ornament.astro";
 import Photo from "../../components/Photo.astro";
@@ -18,55 +22,90 @@ const counter = (n: number) =>
     .replace("{total}", String(total));
 ---
 
-<section class="storytellers" aria-labelledby="storytellers-title">
-  <h2 id="storytellers-title" class="label title">
-    {storytellers.title}
-  </h2>
+<section
+  class="storytellers"
+  aria-labelledby="storytellers-title"
+  data-storytellers
+>
+  <div class="pin">
+    <div class="stage">
+      <div class="frame">
+        <h2 id="storytellers-title" class="label title">
+          {storytellers.title}
+        </h2>
 
-  <div class="list">
-    {storytellers.list.map((person, i) => (
-      <article class="person" aria-labelledby={`storyteller-${i}`}>
-        <div class="portrait">
-          <Ornament name="flower" class="portrait-flower" />
-          <div class="arch">
-            <Photo
-              image={person.portrait}
-              ratio="3 / 4"
-              sizes="(width < 1100px) 16rem, 22rem"
-              class="arch-photo"
-            />
-          </div>
-          <Ornament name="oak-rule" class="portrait-rule" />
+        <div class="list">
+          {storytellers.list.map((person, i) => (
+            <article
+              class="person"
+              aria-labelledby={`storyteller-${i}`}
+              data-storyteller
+            >
+              <div class="portrait">
+                <Ornament name="flower" class="portrait-flower" />
+                <div class="arch">
+                  <Photo
+                    image={person.portrait}
+                    ratio="3 / 4"
+                    sizes="(width < 1100px) 16rem, 22rem"
+                    class="arch-photo"
+                  />
+                </div>
+                <Ornament name="oak-rule" class="portrait-rule" />
+              </div>
+
+              <div class="text">
+                <div class="meta">
+                  <span class="label">{counter(i + 1)}</span>
+                  {SHOW_PLACEHOLDER_TAGS && person.placeholder && (
+                    <span class="placeholder-tag">{site.placeholderTag}</span>
+                  )}
+                </div>
+                <div class="name-row">
+                  <h3 id={`storyteller-${i}`} class="name">
+                    {person.name}
+                  </h3>
+                  <Ornament name={person.ornament} class="corner" />
+                </div>
+                <p class="bio">{person.bio}</p>
+                <h4 class="label tales-title">{storytellers.talesTitle}</h4>
+                <ul class="tales" role="list">
+                  {person.tales.map((tale) => (
+                    <li>
+                      <Ornament name="oak-leaf" class="leaf" />
+                      <span>{tale}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))}
         </div>
 
-        <div class="text">
-          <div class="meta">
-            <span class="label">{counter(i + 1)}</span>
-            {SHOW_PLACEHOLDER_TAGS && person.placeholder && (
-              <span class="placeholder-tag">{site.placeholderTag}</span>
-            )}
-          </div>
-          <div class="name-row">
-            <h3 id={`storyteller-${i}`} class="name">
-              {person.name}
-            </h3>
-            <Ornament name={person.ornament} class="corner" />
-          </div>
-          <p class="bio">{person.bio}</p>
-          <h4 class="label tales-title">{storytellers.talesTitle}</h4>
-          <ul class="tales" role="list">
-            {person.tales.map((tale) => (
-              <li>
-                <Ornament name="oak-leaf" class="leaf" />
-                <span>{tale}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </article>
-    ))}
+        <Ornament name="oak-rule" class="frame-rule" />
+      </div>
+
+      <nav class="steps" aria-label={storytellers.navLabel}>
+        {storytellers.list.map((person, i) => (
+          <>
+            {i > 0 && <span class="step-line" aria-hidden="true" />}
+            <button type="button" class="step" data-step={i}>
+              <span class="step-mark" aria-hidden="true">
+                <Ornament name="flower" class="step-flower" />
+                <span class="step-ring" />
+              </span>
+              <span class="step-name">{person.name}</span>
+            </button>
+          </>
+        ))}
+      </nav>
+    </div>
   </div>
 </section>
+
+<script>
+  import "../../scripts/storytellers";
+</script>
 
 <style>
   .storytellers {
@@ -290,6 +329,385 @@ const counter = (n: number) =>
     .tales :global(.leaf) {
       width: 1.625rem;
       height: 0.875rem;
+    }
+  }
+
+  /* The frame rule and step buttons only exist in the sequence. */
+  .frame :global(.frame-rule),
+  .steps {
+    display: none;
+  }
+
+  /* Sequence mode (.is-sequence, set by storytellers.ts) ================== */
+  .is-sequence {
+    height: calc(100svh + var(--sequence-scroll));
+    padding-block: 0;
+  }
+
+  .is-sequence .pin {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100svh;
+  }
+
+  .is-sequence .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(var(--space-l), 4svh, var(--space-2xl));
+    width: 100%;
+  }
+
+  /* Double-ruled frame: stays still while the storytellers change. */
+  .is-sequence .frame {
+    position: relative;
+    width: 100%;
+    max-width: 70rem;
+    padding: clamp(var(--space-2xl), 7svh, var(--space-5xl)) var(--space-4xl)
+      clamp(var(--space-xl), 5.5svh, var(--space-3xl));
+    border: var(--rule-thin) solid var(--color-ink-red);
+    outline: var(--rule-hair) solid var(--color-ink-red);
+    outline-offset: calc(
+      -1 * (var(--rule-thin) + var(--frame-gap) + var(--rule-hair))
+    );
+  }
+
+  .is-sequence .title,
+  .is-sequence .frame :global(.frame-rule) {
+    position: absolute;
+    left: 50%;
+    z-index: 3;
+    background: var(--color-paper) var(--texture-grain);
+  }
+
+  .is-sequence .title {
+    top: 0;
+    padding-inline: var(--space-s);
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  .is-sequence .title::before,
+  .is-sequence .title::after {
+    display: none;
+  }
+
+  .is-sequence .frame :global(.frame-rule) {
+    display: block;
+    bottom: 0;
+    width: 13.75rem;
+    height: 2rem;
+    padding-inline: var(--space-xs);
+    box-sizing: content-box;
+    transform: translate(-50%, 50%);
+    color: var(--color-ink-red);
+  }
+
+  /* All storytellers share one grid cell, so the frame keeps its size. */
+  .is-sequence .list {
+    display: grid;
+    margin-top: 0;
+  }
+
+  .is-sequence .person,
+  .is-sequence .person:nth-child(even) {
+    position: relative;
+    grid-area: 1 / 1;
+    grid-template-columns: 18rem minmax(0, 1fr) 7.25rem;
+    gap: var(--space-4xl);
+  }
+
+  .is-sequence .person:nth-child(even) .portrait {
+    order: 0;
+  }
+
+  .is-sequence .person:nth-child(even) .text {
+    justify-self: stretch;
+  }
+
+  .is-sequence .text {
+    max-width: none;
+  }
+
+  /* The portrait shrinks on short screens so the frame still fits. */
+  .is-sequence .arch {
+    width: min(18rem, 34svh);
+  }
+
+  .is-sequence .portrait :global(.portrait-flower),
+  .is-sequence .portrait :global(.portrait-rule) {
+    z-index: 2;
+  }
+
+  .is-sequence .portrait :global(.portrait-rule) {
+    width: 11.875rem;
+    height: 1.75rem;
+  }
+
+  /* The arch, flower and rule are drawn once, by the first storyteller. */
+  .is-sequence .person + .person .arch {
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .is-sequence .person + .person :global(.portrait-flower),
+  .is-sequence .person + .person :global(.portrait-rule) {
+    visibility: hidden;
+  }
+
+  .is-sequence .name-row :global(.corner) {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 7.25rem;
+    height: 7.25rem;
+  }
+
+  .is-sequence .bio {
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+
+  .is-sequence .tales-title {
+    margin-top: var(--space-l);
+  }
+
+  .is-sequence .tales li {
+    padding-block: var(--space-2xs);
+  }
+
+  /* The change is time-based, independent of scroll speed. */
+  .is-sequence .person :is(.meta, .name, .bio, .tales-title, .tales),
+  .is-sequence .person :global(.corner),
+  .is-sequence .person :global(.arch-photo) {
+    opacity: 0;
+    transform: translateY(var(--sequence-rise));
+    pointer-events: none;
+    transition:
+      opacity var(--sequence-out-duration) var(--sequence-easing),
+      transform 0s linear var(--sequence-out-duration);
+  }
+
+  .is-sequence .person.is-active :is(.meta, .name, .bio, .tales-title, .tales),
+  .is-sequence .person.is-active :global(.corner),
+  .is-sequence .person.is-active :global(.arch-photo) {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition:
+      opacity var(--sequence-in-duration) var(--sequence-easing)
+        var(--sequence-in-delay),
+      transform var(--sequence-in-duration) var(--sequence-easing)
+        var(--sequence-in-delay);
+  }
+
+  /* Step buttons ------------------------------------------------------------- */
+  .is-sequence .steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 47.5rem;
+  }
+
+  .step {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: var(--size-touch);
+    padding: var(--space-3xs);
+    border: 0;
+    background: none;
+    color: var(--color-ink-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.14em;
+    line-height: 1.3;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color var(--duration-fast) ease;
+  }
+
+  .step:hover,
+  .step[aria-current="step"] {
+    color: var(--color-ink-red);
+  }
+
+  .step-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-ink-red);
+  }
+
+  .step-mark :global(.step-flower) {
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .step-ring {
+    width: 0.875rem;
+    height: 0.875rem;
+    border: var(--rule-thin) solid currentColor;
+    border-radius: 50%;
+  }
+
+  .step[aria-current="step"] :global(.step-flower) {
+    display: block;
+  }
+
+  .step[aria-current="step"] .step-ring {
+    display: none;
+  }
+
+  .step-line {
+    flex: none;
+    width: var(--space-4xl);
+    height: var(--rule-hair);
+    margin-top: calc(var(--space-3xs) + 0.875rem);
+    background: var(--color-ink-red);
+  }
+
+  /* Sequence below 1100px: small portrait beside the name, text below. */
+  @media (width < 1100px) {
+    .is-sequence .frame {
+      padding: var(--space-xl) var(--space-m) var(--space-l);
+    }
+
+    .is-sequence .person,
+    .is-sequence .person:nth-child(even) {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas:
+        "portrait meta"
+        "portrait name"
+        "bio bio"
+        "tales-title tales-title"
+        "tales tales";
+      align-content: start;
+      align-items: start;
+      justify-items: stretch;
+      gap: 0 var(--space-s);
+    }
+
+    .is-sequence .text {
+      display: contents;
+    }
+
+    .is-sequence .portrait {
+      grid-area: portrait;
+      padding-top: var(--space-xs);
+    }
+
+    .is-sequence .arch {
+      width: clamp(6.5rem, 20vw, 11rem);
+      padding: var(--frame-gap);
+      box-shadow:
+        0 0 0 var(--space-3xs) var(--color-paper),
+        0 0 0 calc(var(--space-3xs) + var(--rule-thin)) currentColor;
+    }
+
+    .is-sequence .portrait :global(.portrait-flower) {
+      width: 1.375rem;
+      height: 1.375rem;
+      padding-inline: var(--space-3xs);
+    }
+
+    .is-sequence .portrait :global(.portrait-rule) {
+      display: none;
+    }
+
+    .is-sequence .meta {
+      grid-area: meta;
+      align-self: end;
+      gap: var(--space-2xs);
+      padding-right: calc(3rem + var(--space-2xs));
+    }
+
+    .is-sequence .name-row {
+      grid-area: name;
+      align-items: flex-start;
+      margin-top: var(--space-2xs);
+    }
+
+    .is-sequence .name {
+      font-size: var(--text-title);
+    }
+
+    /* Corner drawing top right, beside the counter; the name gets the full width. */
+    .is-sequence .name-row :global(.corner) {
+      top: var(--space-xs);
+      bottom: auto;
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .is-sequence .name {
+      overflow-wrap: break-word;
+    }
+
+    .is-sequence .bio {
+      grid-area: bio;
+      margin-top: var(--space-xs);
+      line-height: 1.5;
+    }
+
+    .is-sequence .tales-title {
+      grid-area: tales-title;
+      margin-top: var(--space-xs);
+    }
+
+    .is-sequence .tales {
+      grid-area: tales;
+      margin-top: var(--space-2xs);
+    }
+
+    .is-sequence .tales li {
+      padding-block: var(--space-3xs);
+      font-size: var(--text-body-l);
+    }
+
+    .is-sequence .frame :global(.frame-rule) {
+      width: 9.375rem;
+      height: 1.375rem;
+    }
+
+    .is-sequence .stage {
+      gap: var(--space-s);
+    }
+
+    .is-sequence .steps {
+      max-width: 22rem;
+    }
+
+    .step {
+      gap: var(--space-3xs);
+      font-size: var(--text-caption);
+      letter-spacing: 0.08em;
+    }
+
+    .step-mark {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .step-line {
+      width: var(--space-s);
+    }
+  }
+
+  /* Very narrow phones: long surnames still fit beside the portrait. */
+  @media (width < 360px) {
+    .is-sequence .name {
+      font-size: var(--text-tile);
     }
   }
 </style>
