@@ -44,6 +44,22 @@ export const images = {
     alt: "Αφήγηση σε πλατεία στο Πήλιο",
     placeholder: true,
   },
+  /** Storyteller portraits (/omada), shown in an arched frame; portrait orientation, about 4:5. */
+  portraitStivachtari: {
+    src: "portrait-stivachtari.jpg",
+    alt: "Η Στέλλα Στιβαχτάρη",
+    placeholder: true,
+  },
+  portraitTsatsaroni: {
+    src: "portrait-tsatsaroni.jpg",
+    alt: "Η Στέλλα Τσατσαρώνη",
+    placeholder: true,
+  },
+  portraitBasdara: {
+    src: "portrait-basdara.jpg",
+    alt: "Η Ελένη Μπασδάρα",
+    placeholder: true,
+  },
   /** Preview image when a page is shared (Open Graph). Best at 1200x630; other sizes are cropped to fit. */
   ogImage: {
     src: "og-image.jpg",

@@ -39,7 +39,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 ## Content
 
-- All homepage copy lives in `src/data/site.ts`. No copy is hardcoded in components.
+- One data file per page: homepage and shared copy (header, footer, routes, flags) live in `src/data/site.ts`; every other page has its own file in `src/data/` (`team.ts` for `/omada`). No copy is hardcoded in components.
 - Never use em dashes (—) in any copy. ESLint fails on them.
 - Greek labels are stored in normal case and uppercased with CSS (`text-transform: uppercase` under `lang="el"` drops the tonos and keeps the diaeresis).
 - Page routes are defined in `site.ts`: `/omada`, `/nea`, `/proskaleste-mas`. "Επικοινωνία" and "Προσκαλέστε μας" both point to `/proskaleste-mas`.
@@ -63,6 +63,28 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - One optimized SVG per ornament in `src/assets/ornaments/`, rendered inline by `src/components/Ornament.astro`.
 - Colors come from `currentColor`. No internal IDs (masks are baked into paths), so an ornament can appear several times on a page.
 - The hand-printed roughness filter and paper grain are defined once in the base layout and applied with CSS.
+- Each ornament renders inside a box of fixed size set in CSS, and the drawing scales to fit that box without distortion. A replacement with slightly different proportions still fits; it just leaves a little empty space on one side.
+
+### How to replace an ornament with your own drawing
+
+1. **Find the file.** Ornaments live in `src/assets/ornaments/`. To replace one, save the new drawing under the **same file name** (lowercase, words joined with hyphens). Current drawings:
+   - Storyteller corner drawings (`/omada`): `castle.svg`, `dragon.svg`, `tree.svg` (about square).
+   - Oak branch (`/omada` intro): `oak-branch.svg` (detailed, used when shown at least 300px wide) and `oak-branch-small.svg` (simpler, for small sizes). Portrait shape, about 460:640.
+   - `oak-leaf.svg`, `oak-rule.svg`, `flower.svg`, `crest.svg`, `crest-yarn.svg`, `yarn-ball.svg`, `corner.svg`, `corner-small.svg`, `sprig.svg`, `quote-mark.svg`, `audience-*.svg`.
+2. **One color only.** Draw in a single color. In the SVG every `fill` and `stroke` must be `currentColor` (or `none`), never a color code such as `#A3261C`. The site paints it with its own red, so the color can change in one place.
+3. **Keep it simple inside.** No embedded images, no gradients, no `<style>` blocks, no text (convert text to outlines), and no `id` attributes (masks, clip paths and filters need IDs, which break when an ornament appears more than once on a page). Cut-outs should be real holes in the shape, not masks.
+4. **viewBox, no fixed size.** The root `<svg>` needs a `viewBox` (for example `viewBox="0 0 120 120"`) and should have no `width` or `height`. Keep the drawing close to the edges of the viewBox; empty margins make it look smaller than its neighbours.
+5. **Line weight.** Lines scale with the drawing. A 1px line in a 460px-wide drawing becomes about 0.3px when shown 140px wide and fades away. Check the smallest size it is used at (see the CSS for that ornament).
+6. **Export.**
+   - Illustrator: File > Export > Export As > SVG. Styling: Presentation Attributes. Font: Convert to Outlines. Images: none. Object IDs: Minimal. Decimal: 2. Minify: on. Responsive: on (removes width/height).
+   - Inkscape: File > Save As > Optimized SVG, with "Keep editor data" off and "Remove IDs" on.
+   - Figma: select the frame, Export > SVG, with "Include id attribute" off and "Outline text" on.
+   - Then clean it: open it in SVGOMG (jakearchibald.github.io/svgomg), turn **"Remove viewBox" off**, and download. This also strips editor metadata, including C2PA "content credentials" blocks that some tools add (they can be 10 KB or more).
+   - Finally, in a text editor, replace any remaining color codes with `currentColor`.
+7. **Check it.**
+   - In a terminal: `grep -nE '#[0-9a-fA-F]{3,6}|id="|<image|<style|width=|height=' src/assets/ornaments/<name>.svg` should print nothing. (A `width` inside a `<rect>` is fine; the root `<svg>` must not have one.)
+   - Run `npm run build` and `npm run lint`.
+   - Open the page in the browser at desktop and phone widths: the drawing should be red, sharp, and sit inside its box without being cut off.
 
 ## Red thread
 

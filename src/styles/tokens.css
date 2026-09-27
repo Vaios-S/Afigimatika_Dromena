@@ -36,6 +36,11 @@
      Fluid between the design's mobile (390px) and desktop (1440px) frames.
      ------------------------------------------------------------------------ */
   --text-hero: clamp(2.75rem, 1.45rem + 5.333vw, 6.25rem); /* 44 → 100 */
+  --text-page-title: clamp(
+    2.75rem,
+    1.636rem + 4.571vw,
+    5.75rem
+  ); /* 44 → 92, inner page h1 */
   --text-h2: clamp(2.375rem, 1.818rem + 2.286vw, 3.875rem); /* 38 → 62 */
   --text-cta: clamp(2.125rem, 1.707rem + 1.714vw, 3.25rem); /* 34 → 52 */
   --text-verse: clamp(1.8125rem, 1.232rem + 2.381vw, 3.375rem); /* 29 → 54 */

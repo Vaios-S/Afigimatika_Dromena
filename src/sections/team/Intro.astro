@@ -1,0 +1,152 @@
+---
+/**
+ * Page intro for /omada: label, title and short text with an oak branch.
+ * Wide screens (1260px and up): the detailed branch hangs in the top-right
+ * corner. Narrower: the simpler branch sits beside the label, as on mobile.
+ * 1260px is where the detailed branch gets at least 300px wide; smaller, its
+ * thin lines fade, so the simpler drawing is used instead.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import { team } from "../../data/team";
+
+const { intro } = team;
+---
+
+<section class="intro" aria-labelledby="intro-title">
+  <Ornament
+    name="oak-branch"
+    class="branch-large"
+    preserveAspectRatio="xMaxYMin meet"
+  />
+  <div class="content">
+    <div class="head">
+      <div class="labels">
+        <p class="label kicker">{intro.label}</p>
+        {SHOW_PLACEHOLDER_TAGS && intro.placeholder && (
+          <span class="placeholder-tag">{site.placeholderTag}</span>
+        )}
+      </div>
+      <Ornament
+        name="oak-branch-small"
+        class="branch-small"
+        preserveAspectRatio="xMaxYMax meet"
+      />
+    </div>
+    <h1 id="intro-title" class="title">
+      {intro.title.text} <em>{intro.title.accent}</em>
+    </h1>
+    <p class="text">{intro.text}</p>
+  </div>
+</section>
+
+<style>
+  .intro {
+    position: relative;
+    min-height: 40rem;
+    padding: calc(var(--space-8xl) + var(--space-l)) var(--space-gutter)
+      calc(var(--space-7xl) + var(--space-l));
+    border-bottom: var(--rule-thin) solid var(--color-ink-red);
+  }
+
+  /* Second, thinner rule under the border. */
+  .intro::after {
+    content: "";
+    position: absolute;
+    inset: auto 0
+      calc(-1 * (var(--rule-thin) + var(--frame-gap) - var(--rule-hair)));
+    height: var(--rule-hair);
+    background: var(--color-ink-red);
+  }
+
+  .content {
+    position: relative;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .kicker {
+    font-size: var(--text-kicker);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    max-width: 50rem;
+    margin-top: var(--space-m);
+    font-size: var(--text-page-title);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .text {
+    max-width: 38.75rem;
+    margin-top: var(--space-xl);
+    font-size: var(--text-body-l);
+  }
+
+  /* Oak branches: each drawing sits in a fixed box and scales to fit it. */
+  .intro :global(.branch-large) {
+    position: absolute;
+    top: 0;
+    right: var(--space-l);
+    width: min(28.75rem, 100% - 60rem);
+    height: auto;
+    aspect-ratio: 460 / 640;
+    color: var(--color-ink-red);
+  }
+
+  .head :global(.branch-small) {
+    display: none;
+    flex: none;
+    width: 8.75rem;
+    height: 12.2rem;
+    color: var(--color-ink-red);
+  }
+
+  @media (width < 1260px) {
+    .intro {
+      min-height: 0;
+      padding-block: var(--space-l) var(--space-2xl);
+    }
+
+    .intro :global(.branch-large) {
+      display: none;
+    }
+
+    .head {
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .labels {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-xs);
+      padding-bottom: var(--space-xs);
+    }
+
+    .head :global(.branch-small) {
+      display: block;
+    }
+
+    .title {
+      margin-top: var(--space-xs);
+      line-height: 1.04;
+    }
+
+    .text {
+      margin-top: var(--space-m);
+    }
+  }
+</style>
