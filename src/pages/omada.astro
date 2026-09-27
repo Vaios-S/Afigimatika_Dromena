@@ -2,8 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { team } from "../data/team";
 import Intro from "../sections/team/Intro.astro";
+import Storytellers from "../sections/team/Storytellers.astro";
 ---
 
 <BaseLayout title={team.meta.title} description={team.meta.description}>
   <Intro />
+  <Storytellers />
 </BaseLayout>

@@ -1,0 +1,295 @@
+---
+/**
+ * The three storytellers as a stacked list: arched portrait, name with the
+ * storyteller's corner drawing, bio and favourite tales. Wide screens
+ * alternate the portrait left and right; narrower screens stack it on top.
+ * This is also the version shown without JavaScript or with reduced motion.
+ */
+import Ornament from "../../components/Ornament.astro";
+import Photo from "../../components/Photo.astro";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import { team } from "../../data/team";
+
+const { storytellers } = team;
+const total = storytellers.list.length;
+const counter = (n: number) =>
+  storytellers.counter
+    .replace("{n}", String(n))
+    .replace("{total}", String(total));
+---
+
+<section class="storytellers" aria-labelledby="storytellers-title">
+  <h2 id="storytellers-title" class="label title">
+    {storytellers.title}
+  </h2>
+
+  <div class="list">
+    {storytellers.list.map((person, i) => (
+      <article class="person" aria-labelledby={`storyteller-${i}`}>
+        <div class="portrait">
+          <Ornament name="flower" class="portrait-flower" />
+          <div class="arch">
+            <Photo
+              image={person.portrait}
+              ratio="3 / 4"
+              sizes="(width < 1100px) 16rem, 22rem"
+              class="arch-photo"
+            />
+          </div>
+          <Ornament name="oak-rule" class="portrait-rule" />
+        </div>
+
+        <div class="text">
+          <div class="meta">
+            <span class="label">{counter(i + 1)}</span>
+            {SHOW_PLACEHOLDER_TAGS && person.placeholder && (
+              <span class="placeholder-tag">{site.placeholderTag}</span>
+            )}
+          </div>
+          <div class="name-row">
+            <h3 id={`storyteller-${i}`} class="name">
+              {person.name}
+            </h3>
+            <Ornament name={person.ornament} class="corner" />
+          </div>
+          <p class="bio">{person.bio}</p>
+          <h4 class="label tales-title">{storytellers.talesTitle}</h4>
+          <ul class="tales" role="list">
+            {person.tales.map((tale) => (
+              <li>
+                <Ornament name="oak-leaf" class="leaf" />
+                <span>{tale}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .storytellers {
+    max-width: calc(var(--width-content) + 2 * var(--space-gutter));
+    margin-inline: auto;
+    padding: var(--space-section) var(--space-gutter)
+      calc(var(--space-section) + var(--space-l));
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-s);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title::before,
+  .title::after {
+    content: "";
+    width: var(--space-2xl);
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8xl);
+    margin-top: calc(var(--space-7xl) - var(--space-2xs));
+  }
+
+  /* Article: portrait beside the text, alternating sides. */
+  .person {
+    display: grid;
+    grid-template-columns: 25rem minmax(0, 1fr);
+    align-items: center;
+    gap: calc(var(--space-7xl) + var(--space-2xs));
+  }
+
+  .person:nth-child(even) {
+    grid-template-columns: minmax(0, 1fr) 25rem;
+  }
+
+  .person:nth-child(even) .portrait {
+    order: 2;
+  }
+
+  .person:nth-child(even) .text {
+    justify-self: end;
+  }
+
+  /* Portrait: arched double frame, flower on top, oak rule below. */
+  .portrait {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--space-m);
+    color: var(--color-ink-red);
+  }
+
+  .portrait :global(.portrait-flower) {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding-inline: var(--space-2xs);
+    box-sizing: content-box;
+    background: var(--color-paper) var(--texture-grain);
+  }
+
+  .arch {
+    width: 22.5rem;
+    padding: var(--space-xs);
+    border: var(--rule-thin) solid currentColor;
+    border-radius: 100vmax 100vmax 0 0;
+    box-shadow:
+      0 0 0 var(--frame-gap) var(--color-paper),
+      0 0 0 calc(var(--frame-gap) + var(--rule-thin)) currentColor;
+  }
+
+  .arch :global(.arch-photo) {
+    border-radius: 100vmax 100vmax 0 0;
+    overflow: hidden;
+  }
+
+  .portrait :global(.portrait-rule) {
+    position: relative;
+    width: 13.75rem;
+    height: 2rem;
+    margin-top: calc(-1 * var(--space-s));
+    padding-inline: var(--space-2xs);
+    box-sizing: content-box;
+    background: var(--color-paper) var(--texture-grain);
+  }
+
+  /* Text --------------------------------------------------------------------- */
+  .text {
+    max-width: 38.75rem;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .name-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-m);
+    margin-top: var(--space-s);
+  }
+
+  .name {
+    font-size: var(--text-person);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-display);
+  }
+
+  .name-row :global(.corner) {
+    flex: none;
+    width: 4.5rem;
+    height: 4.5rem;
+    color: var(--color-ink-red);
+  }
+
+  .bio {
+    margin-top: var(--space-m);
+    font-size: var(--text-body-l);
+    line-height: 1.65;
+  }
+
+  .tales-title {
+    margin-top: var(--space-2xl);
+  }
+
+  .tales {
+    margin-top: var(--space-s);
+    padding: 0;
+    border-top: var(--rule-hair) solid var(--color-rule-soft);
+    list-style: none;
+  }
+
+  .tales li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    padding-block: var(--space-xs);
+    border-bottom: var(--rule-hair) solid var(--color-rule-soft);
+    font-family: var(--font-display);
+    font-size: var(--text-tile);
+    font-style: italic;
+    line-height: 1.25;
+  }
+
+  .tales :global(.leaf) {
+    flex: none;
+    width: 1.875rem;
+    height: 1rem;
+    color: var(--color-ink-red);
+  }
+
+  /* Narrower screens: portrait on top, text below. */
+  @media (width < 1100px) {
+    .person,
+    .person:nth-child(even) {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
+      gap: var(--space-xl);
+    }
+
+    .person:nth-child(even) .portrait {
+      order: 0;
+    }
+
+    .text {
+      width: 100%;
+    }
+
+    .arch {
+      width: 15.625rem;
+      padding: var(--space-2xs);
+    }
+
+    .portrait :global(.portrait-flower) {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .portrait :global(.portrait-rule) {
+      width: 10.625rem;
+      height: 1.5625rem;
+    }
+  }
+
+  @media (width < 760px) {
+    .storytellers {
+      padding-block: var(--space-4xl) var(--space-6xl);
+    }
+
+    .title::before,
+    .title::after {
+      display: none;
+    }
+
+    .list {
+      gap: var(--space-7xl);
+      margin-top: var(--space-2xl);
+    }
+
+    .name-row :global(.corner) {
+      width: 3.5rem;
+      height: 3.5rem;
+    }
+
+    .tales :global(.leaf) {
+      width: 1.625rem;
+      height: 0.875rem;
+    }
+  }
+</style>

@@ -44,7 +44,7 @@ export const images = {
     alt: "Αφήγηση σε πλατεία στο Πήλιο",
     placeholder: true,
   },
-  /** Storyteller portraits (/omada), shown in an arched frame; portrait orientation, about 4:5. */
+  /** Storyteller portraits (/omada), shown in an arched frame and cropped to 3:4 (portrait orientation). */
   portraitStivachtari: {
     src: "portrait-stivachtari.jpg",
     alt: "Η Στέλλα Στιβαχτάρη",

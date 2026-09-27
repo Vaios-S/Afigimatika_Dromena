@@ -13,16 +13,19 @@ interface Props {
   image: ImageKey;
   /** Rendered width hint for responsive images, as in the `sizes` attribute. */
   sizes: string;
+  /** Shape of the frame, as a CSS aspect-ratio (the image is cropped to fill it). */
+  ratio?: string;
   class?: string;
 }
 
-const { image, sizes, class: className } = Astro.props;
+const { image, sizes, ratio = "16 / 9", class: className } = Astro.props;
+const style = `--ratio: ${ratio}`;
 const entry = images[image];
 const file = imageFile(image);
 ---
 
 {!file ? (
-  <div class:list={["photo", "placeholder", className]}>
+  <div class:list={["photo", "placeholder", className]} style={style}>
     <img src={placeholderPhoto.src} alt="" width="480" height="270" />
     <span class="caption">
       {site.photoPlaceholder} · {entry.alt}
@@ -36,6 +39,7 @@ const file = imageFile(image);
     widths={[480, 720, 960]}
     formats={["avif", "webp"]}
     class:list={["photo", className]}
+    style={style}
   />
 )}
 
@@ -43,7 +47,7 @@ const file = imageFile(image);
   .photo {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--ratio);
     object-fit: cover;
   }
 
