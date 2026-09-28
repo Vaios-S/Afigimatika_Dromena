@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { invite } from "../data/invite";
+import Intro from "../sections/invite/Intro.astro";
+---
+
+<BaseLayout title={invite.meta.title} description={invite.meta.description}>
+  <Intro />
+</BaseLayout>
