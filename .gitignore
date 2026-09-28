@@ -8,9 +8,10 @@ node_modules/
 # logs
 npm-debug.log*
 
-# environment
+# environment (local secrets; .env.example documents the variables)
 .env
 .env.*
+!.env.example
 
 # editors and OS
 .vscode/*

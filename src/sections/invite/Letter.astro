@@ -9,8 +9,15 @@
  * <label> whose visible caption under the line is the label text.
  * Wide screens (1100px and up): blanks sit inline in the sentences.
  * Narrower: each blank gets its own full-width line.
+ *
+ * Sending (Web3Forms, key in PUBLIC_WEB3FORMS_KEY):
+ * - Without JavaScript: a normal POST; Web3Forms redirects back to
+ *   #letter-sent, and CSS (:target) shows the thank-you panel.
+ * - With JavaScript (src/scripts/letter.ts): own validation, fetch, and the
+ *   sending, success and failure states. All texts are rendered here.
  */
 import Button from "../../components/Button.astro";
+import Ornament from "../../components/Ornament.astro";
 import canopy from "../../assets/tree/canopy.svg?url";
 import canopySmall from "../../assets/tree/canopy-small.svg?url";
 import roots from "../../assets/tree/roots.svg?url";
@@ -23,6 +30,17 @@ import { site, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
 
 const { letter } = invite;
 const f = letter.fields;
+
+/** Web3Forms: the endpoint and the public access key (see .env.example). */
+const endpoint = "https://api.web3forms.com/submit";
+const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? "";
+if (!accessKey && import.meta.env.PROD) {
+  console.warn(
+    "[letter] PUBLIC_WEB3FORMS_KEY is not set: the invite form will not send. See .env.example.",
+  );
+}
+/** Where Web3Forms sends visitors without JavaScript after a successful POST. */
+const redirect = new URL("/proskaleste-mas/#letter-sent", Astro.site).href;
 
 interface Blank {
   id: keyof typeof f;
@@ -73,7 +91,33 @@ const tree = [
 
     <div class="divider" aria-hidden="true"></div>
 
-    <form class="form" aria-label={letter.formLabel} method="post">
+    <form
+      class="form"
+      aria-label={letter.formLabel}
+      action={endpoint}
+      method="post"
+      data-letter
+      data-subject={letter.subject}
+      data-submit={letter.submit}
+      data-sending={letter.sending}
+      data-sending-note={letter.sendingNote}
+      data-retry={letter.retry}
+      data-not-configured={letter.notConfigured}
+    >
+      <input type="hidden" name="access_key" value={accessKey} />
+      <input type="hidden" name="subject" value={letter.subjectNoJs} />
+      <input type="hidden" name="from_name" value={site.name} />
+      <input type="hidden" name="redirect" value={redirect} />
+      {/* Spam trap: invisible and unreachable for people; bots tend to tick it. */}
+      <input
+        type="checkbox"
+        name="botcheck"
+        class="botcheck"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+      />
+
       {lines.map((line, i) => (
         <>
           {i === 2 && (
@@ -95,31 +139,47 @@ const tree = [
           <p class="line">
             {line.map((blank) => {
               const field = f[blank.id];
+              const errorId = `letter-error-${blank.id}`;
               return (
                 <span class="piece">
                   <span class="before">{field.before}</span>{" "}
-                  <label class:list={["blank", `blank-${blank.id}`]}>
-                    <input
-                      name={field.key}
-                      type={blank.type ?? "text"}
-                      autocomplete={blank.autocomplete}
-                      inputmode={blank.type === "email" ? "email" : undefined}
-                      required={blank.required}
-                      placeholder={
-                        "placeholder" in field ? field.placeholder : undefined
-                      }
-                    />
-                    <span class="caption">
-                      {field.caption}
-                      {blank.required && (
-                        <>
-                          {" "}
-                          <span aria-hidden="true">·</span>{" "}
-                          <span class="required">{letter.required}</span>
-                        </>
-                      )}
-                    </span>
-                  </label>
+                  <span class:list={["blank", `blank-${blank.id}`]}>
+                    <label class="field">
+                      <input
+                        name={field.key}
+                        type={blank.type ?? "text"}
+                        autocomplete={blank.autocomplete}
+                        inputmode={blank.type === "email" ? "email" : undefined}
+                        required={blank.required}
+                        aria-describedby={blank.required ? errorId : undefined}
+                        placeholder={
+                          "placeholder" in field ? field.placeholder : undefined
+                        }
+                        data-field={blank.id}
+                        data-error-missing={
+                          blank.id === "name" || blank.id === "email"
+                            ? letter.errors[blank.id]
+                            : undefined
+                        }
+                        data-error-format={
+                          blank.id === "email"
+                            ? letter.errors.emailFormat
+                            : undefined
+                        }
+                      />
+                      <span class="caption">
+                        {field.caption}
+                        {blank.required && (
+                          <>
+                            {" "}
+                            <span aria-hidden="true">·</span>{" "}
+                            <span class="required">{letter.required}</span>
+                          </>
+                        )}
+                      </span>
+                    </label>
+                    {blank.required && <span id={errorId} class="error" />}
+                  </span>
                   {"after" in field && <span class="after">{field.after}</span>}
                 </span>
               );
@@ -128,13 +188,39 @@ const tree = [
         </>
       ))}
 
+      {/* Failure message, filled in by the script from the template below. */}
+      <div class="alert" role="alert" data-alert></div>
+      <template data-failure>
+        <span class="diamond" aria-hidden="true"></span>
+        <span>
+          {letter.failure} <a href={emailHref}>{contact.email}</a>.
+        </span>
+      </template>
+
       <div class="send">
         <Button type="submit" class="send-button">
           {letter.submit}
         </Button>
         <p class="privacy">{letter.privacy}</p>
+        <p class="status" aria-live="polite" data-status></p>
       </div>
     </form>
+
+    {/* Thank-you panel: shown by :target (no JavaScript) or by the script. */}
+    <div id="letter-sent" class="sent" role="status" tabindex="-1" data-sent>
+      <Ornament name="flower" class="sent-flower" />
+      <p class="sent-title">{letter.success.title}</p>
+      <p class="sent-text">
+        <span data-sent-plain>{letter.success.textNoEmail}</span>
+        <span data-sent-email hidden>
+          {letter.success.text}{" "}
+          <span class="sent-email" data-sent-address></span>.
+        </span>
+      </p>
+      <a href="#letter" class="again" data-again>
+        {letter.success.again}
+      </a>
+    </div>
 
     <div class="roots" aria-hidden="true"></div>
 
@@ -158,6 +244,10 @@ const tree = [
     </address>
   </div>
 </section>
+
+<script>
+  import "../../scripts/letter";
+</script>
 
 <style>
   .letter {
@@ -450,6 +540,143 @@ const tree = [
     color: var(--color-ink-muted);
   }
 
+  /* States ---------------------------------------------------------------------- */
+  .botcheck {
+    display: none;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Error: dashed rule, red caption, message with a diamond under the line. */
+  .field input[aria-invalid="true"] {
+    border-bottom: 2px dashed var(--color-ink-red);
+  }
+
+  .field:has([aria-invalid="true"]) .caption {
+    color: var(--color-ink-red);
+  }
+
+  .error,
+  .alert {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  /* width 0 + min-width 100%: the message wraps under its blank instead of widening it. */
+  .error {
+    width: 0;
+    min-width: 100%;
+    padding: var(--space-3xs) var(--space-3xs) 0;
+    font-size: var(--text-small);
+    line-height: 1.4;
+  }
+
+  .error::before,
+  .alert :global(.diamond) {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    transform: translateY(-2px) rotate(45deg);
+  }
+
+  .error:empty,
+  .alert:empty,
+  .status:empty {
+    display: none;
+  }
+
+  .alert {
+    margin-top: var(--space-2xl);
+    font-size: var(--text-body-l);
+    line-height: 1.55;
+  }
+
+  .alert :global(a) {
+    color: inherit;
+    overflow-wrap: anywhere;
+    text-underline-offset: 4px;
+  }
+
+  .status {
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  .send :global(.send-button[aria-disabled="true"]) {
+    opacity: 0.65;
+    cursor: progress;
+  }
+
+  /* Thank-you panel: takes the form's place once the letter is sent. */
+  .sent {
+    display: none;
+    grid-area: form;
+    padding-block: var(--space-xs) var(--space-6xl);
+    scroll-margin-top: var(--space-5xl);
+  }
+
+  .sent:target,
+  .is-sent .sent {
+    display: block;
+  }
+
+  .letter:has(.sent:target) .form,
+  .is-sent .form {
+    display: none;
+  }
+
+  .sent:focus {
+    outline: none;
+  }
+
+  .sent :global(.sent-flower) {
+    width: 3.25rem;
+    height: 3.25rem;
+    color: var(--color-ink-red);
+  }
+
+  .sent-title {
+    margin-top: var(--space-l);
+    font-family: var(--font-display);
+    font-size: var(--text-quote);
+    font-style: italic;
+    line-height: 1.15;
+  }
+
+  .sent-text {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-body-l);
+  }
+
+  .sent-email {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--color-ink-red);
+    overflow-wrap: anywhere;
+  }
+
+  .again {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-touch);
+    margin-top: var(--space-s);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: 6px;
+  }
+
   /* Below 1100px: card under the heading, each blank on its own line. */
   @media (width < 1100px) {
     .grove {
@@ -484,6 +711,10 @@ const tree = [
 
     .blank input {
       width: 100%;
+    }
+
+    .error {
+      width: auto;
     }
 
     /* Sentence punctuation after a blank would sit alone on its own line. */
