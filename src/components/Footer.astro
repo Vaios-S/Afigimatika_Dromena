@@ -4,19 +4,27 @@ import { footer, invite, routes, site } from "../data/site";
 import Button from "./Button.astro";
 import Ornament from "./Ornament.astro";
 
+interface Props {
+  /** Show the invitation ("Να φέρουμε ένα παραμύθι…"). Off on the invite page itself. */
+  cta?: boolean;
+}
+
+const { cta = true } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
 <footer class="footer">
   <div class="inner">
-    <div class="cta">
-      <h2 class="cta-heading">
-        {footer.cta.heading.text} <em>{footer.cta.heading.accent}</em>
-      </h2>
-      <Button href={invite.href} class="cta-button">
-        {invite.label}
-      </Button>
-    </div>
+    {cta && (
+      <div class="cta">
+        <h2 class="cta-heading">
+          {footer.cta.heading.text} <em>{footer.cta.heading.accent}</em>
+        </h2>
+        <Button href={invite.href} class="cta-button">
+          {invite.label}
+        </Button>
+      </div>
+    )}
 
     <div class="divider">
       <Ornament name="crest" class="crest" />

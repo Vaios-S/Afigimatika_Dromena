@@ -12,9 +12,11 @@ interface Props {
   /** Page title; the site name is appended. Omit on the homepage. */
   title?: string;
   description?: string;
+  /** Show the footer invitation; turned off on the invite page. */
+  footerCta?: boolean;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, footerCta = true } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
 
 // Absolute URLs are built from `site` in astro.config.mjs (contact.siteUrl).
@@ -103,7 +105,7 @@ const jsonLdScript = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    <Footer cta={footerCta} />
   </body>
 </html>
 

@@ -1,0 +1,147 @@
+---
+/**
+ * Frequently asked questions: native <details>/<summary>, so it works
+ * without JavaScript. The oak leaf turns when a question opens (no motion
+ * with reduced motion, via the global rule in global.css).
+ */
+import Ornament from "../../components/Ornament.astro";
+import { invite } from "../../data/invite";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+
+const { faq } = invite;
+const provisional = faq.questions.some((item) => item.placeholder);
+---
+
+<section class="faq" aria-labelledby="faq-title">
+  <div class="head">
+    <p class="label kicker">{faq.label}</p>
+    <h2 id="faq-title" class="title">
+      {faq.title}
+    </h2>
+    {SHOW_PLACEHOLDER_TAGS && provisional && (
+      <span class="placeholder-tag">{site.placeholderTag}</span>
+    )}
+  </div>
+
+  <div class="list">
+    {faq.questions.map((item) => (
+      <details class="item">
+        <summary class="question">
+          <Ornament name="oak-leaf" class="leaf" />
+          <span>{item.question}</span>
+        </summary>
+        <p class="answer">{item.answer}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .faq {
+    display: grid;
+    grid-template-columns: 23.75rem minmax(0, 1fr);
+    align-items: start;
+    gap: calc(var(--space-6xl) + var(--space-s));
+    max-width: var(--width-page);
+    margin-inline: auto;
+    padding: calc(var(--space-7xl) + var(--space-2xs)) var(--space-gutter)
+      var(--space-2xl);
+  }
+
+  .kicker {
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    margin-top: var(--space-s);
+    font-size: var(--text-cta);
+    line-height: 1.06;
+  }
+
+  .head .placeholder-tag {
+    display: inline-block;
+    margin-top: var(--space-s);
+  }
+
+  .list {
+    border-top: var(--rule-thin) solid var(--color-ink-red);
+  }
+
+  .item {
+    border-bottom: var(--rule-hair) solid var(--color-rule-soft);
+  }
+
+  .question {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    min-height: var(--size-touch);
+    padding-block: var(--space-l);
+    font-family: var(--font-display);
+    font-size: var(--text-entry);
+    font-weight: var(--weight-medium);
+    line-height: 1.25;
+    list-style: none;
+    cursor: pointer;
+    transition: color var(--duration-fast) ease;
+  }
+
+  /* Safari still draws its own marker unless it is hidden here. */
+  .question::-webkit-details-marker {
+    display: none;
+  }
+
+  .question:hover {
+    color: var(--color-ink-red);
+  }
+
+  .question :global(.leaf) {
+    flex: none;
+    width: 2rem;
+    height: 1.0625rem;
+    color: var(--color-ink-red);
+    transition: transform var(--duration-turn) var(--ease-out);
+  }
+
+  .item[open] .question :global(.leaf) {
+    transform: rotate(90deg);
+  }
+
+  .answer {
+    max-width: 45rem;
+    padding: 0 0 var(--space-l) calc(2rem + var(--space-m));
+    font-size: var(--text-body-l);
+    line-height: 1.65;
+  }
+
+  @media (width < 1100px) {
+    .faq {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-xl);
+    }
+  }
+
+  @media (width < 760px) {
+    .faq {
+      padding-block: var(--space-5xl) var(--space-s);
+    }
+
+    .title {
+      margin-top: var(--space-xs);
+    }
+
+    .question {
+      gap: var(--space-s);
+      padding-block: var(--space-m);
+    }
+
+    .question :global(.leaf) {
+      width: 1.625rem;
+      height: 0.875rem;
+    }
+
+    .answer {
+      padding-left: calc(1.625rem + var(--space-s));
+    }
+  }
+</style>

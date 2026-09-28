@@ -3,17 +3,23 @@ import AgesFrieze from "../components/AgesFrieze.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { invite } from "../data/invite";
 import Bundle from "../sections/invite/Bundle.astro";
+import Faq from "../sections/invite/Faq.astro";
 import Intro from "../sections/invite/Intro.astro";
 import Letter from "../sections/invite/Letter.astro";
 ---
 
-<BaseLayout title={invite.meta.title} description={invite.meta.description}>
+<BaseLayout
+  title={invite.meta.title}
+  description={invite.meta.description}
+  footerCta={false}
+>
   <Intro />
   <section class="ages">
     <AgesFrieze level={2} />
   </section>
   <Bundle />
   <Letter />
+  <Faq />
 </BaseLayout>
 
 <style>

@@ -116,6 +116,9 @@ The tree above, beside and below the letter form is **not** an inline ornament. 
 
 ## Invite form (/proskaleste-mas)
 
+- The footer's invitation ("Να φέρουμε ένα παραμύθι…" with the button) is hidden on this page with `footerCta={false}` on `BaseLayout`, which passes it to `Footer` as `cta`. Other pages keep the default (`true`).
+- The FAQ uses native `<details>`/`<summary>`, so it works without JavaScript. The oak leaf turns 90° when a question opens (`--duration-turn`); reduced motion removes the animation. A question is removed by deleting its entry in `invite.ts`; the placeholder tag shows while any answer is marked `placeholder`.
+
 - The letter form in `src/sections/invite/Letter.astro` sends through Web3Forms. Its access key comes from the environment variable `PUBLIC_WEB3FORMS_KEY` (see `.env.example`); `.env` is gitignored. The key is public by design: Web3Forms keys are sent with every submission.
 - Without the key the site still builds (with a warning). In production the form then shows the failure message with the group's email; in dev it shows "form not configured".
 - **Without JavaScript** the form is a normal POST to Web3Forms. The browser checks the required fields (name, email). On success Web3Forms redirects to `/proskaleste-mas/#letter-sent`, and CSS (`:target`) shows the thank-you panel. On an error Web3Forms shows its own page (accepted).
