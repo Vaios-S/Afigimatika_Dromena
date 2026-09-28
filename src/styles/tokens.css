@@ -62,6 +62,17 @@
     1.095rem + 0.381vw,
     1.4375rem
   ); /* 19 → 23, frieze captions */
+  --text-letter: clamp(
+    1.1875rem,
+    1.095rem + 0.381vw,
+    1.4375rem
+  ); /* 19 → 23, letter sentences */
+  --text-blank: clamp(
+    1.3125rem,
+    1.243rem + 0.286vw,
+    1.5rem
+  ); /* 21 → 24, text typed in blanks */
+  --text-caption-sm: 0.84375rem; /* 13.5, captions under blanks */
   --text-list-title: clamp(
     1.75rem,
     1.518rem + 0.952vw,
@@ -205,6 +216,14 @@
   --sequence-out-duration: 320ms; /* outgoing storyteller fades out */
   --sequence-easing: cubic-bezier(0.33, 0, 0.2, 1);
   --sequence-rise: 10px; /* incoming parts rise this far */
+
+  /* ------------------------------------------------------------------------
+     Letter form (/proskaleste-mas)
+     ------------------------------------------------------------------------ */
+  --letter-measure: 65rem; /* 1040, width of the letter */
+  --letter-leading: 3; /* line height of sentences with inline blanks (room for captions) */
+  --letter-ruled-line: 3rem; /* 48, textarea line spacing (40 on phones) */
+  --blank-rule: 1.5px; /* line under each blank */
 
   /* ------------------------------------------------------------------------
      Motion

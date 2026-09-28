@@ -15,20 +15,21 @@ const {
   variant = "primary",
   size = "md",
   class: className,
+  type,
   ...attrs
 } = Astro.props;
 const classes = ["button", variant, size, className];
 ---
 
 {"href" in attrs && attrs.href ? (
-  <a class:list={classes} {...(attrs as HTMLAttributes<"a">)}>
+  <a class:list={classes} type={type} {...(attrs as HTMLAttributes<"a">)}>
     <slot />
   </a>
 ) : (
   <button
-    type="button"
-    class:list={classes}
     {...(attrs as HTMLAttributes<"button">)}
+    type={(type as HTMLAttributes<"button">["type"]) ?? "button"}
+    class:list={classes}
   >
     <slot />
   </button>

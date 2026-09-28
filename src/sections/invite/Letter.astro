@@ -1,0 +1,562 @@
+---
+/**
+ * The letter form under the tree. The tree has its own grid tracks (canopy
+ * row, trunk column, roots row), so it can never cover text or fields.
+ * The tree drawings (src/assets/tree) are loaded as CSS masks and painted
+ * with the site red: only the variant for the current screen is downloaded.
+ *
+ * The letter reads as sentences with blanks. Each blank is a real input in a
+ * <label> whose visible caption under the line is the label text.
+ * Wide screens (1100px and up): blanks sit inline in the sentences.
+ * Narrower: each blank gets its own full-width line.
+ */
+import Button from "../../components/Button.astro";
+import canopy from "../../assets/tree/canopy.svg?url";
+import canopySmall from "../../assets/tree/canopy-small.svg?url";
+import roots from "../../assets/tree/roots.svg?url";
+import rootsSmall from "../../assets/tree/roots-small.svg?url";
+import trunk from "../../assets/tree/trunk.svg?url";
+import trunkNarrow from "../../assets/tree/trunk-narrow.svg?url";
+import { contact, emailHref, phoneHref } from "../../data/contact";
+import { invite } from "../../data/invite";
+import { site, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
+
+const { letter } = invite;
+const f = letter.fields;
+
+interface Blank {
+  id: keyof typeof f;
+  type?: "text" | "email" | "tel";
+  autocomplete?: string;
+  required?: boolean;
+}
+
+/** The letter's lines, in reading order; the message box sits between the 2nd and 3rd. */
+const lines: Blank[][] = [
+  [
+    { id: "name", autocomplete: "name", required: true },
+    { id: "organization", autocomplete: "organization" },
+    { id: "city", autocomplete: "address-level2" },
+  ],
+  [{ id: "audience" }, { id: "when" }],
+  [
+    { id: "email", type: "email", autocomplete: "email", required: true },
+    { id: "phone", type: "tel", autocomplete: "tel" },
+  ],
+];
+
+const tree = [
+  `--tree-canopy: url("${canopy}")`,
+  `--tree-trunk: url("${trunk}")`,
+  `--tree-roots: url("${roots}")`,
+  `--tree-canopy-small: url("${canopySmall}")`,
+  `--tree-trunk-narrow: url("${trunkNarrow}")`,
+  `--tree-roots-small: url("${rootsSmall}")`,
+].join("; ");
+---
+
+<section id="letter" class="letter" aria-labelledby="letter-title" style={tree}>
+  <div class="grove">
+    <div class="canopy" aria-hidden="true"></div>
+    <div class="trunk" aria-hidden="true"></div>
+
+    <div class="head">
+      <p class="kicker">{letter.kicker}</p>
+      <h2 id="letter-title" class="title">
+        {letter.title}
+      </h2>
+      <p class="text">{letter.text}</p>
+      {SHOW_PLACEHOLDER_TAGS && letter.placeholder && (
+        <span class="placeholder-tag">{site.placeholderTag}</span>
+      )}
+    </div>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <form class="form" aria-label={letter.formLabel} method="post">
+      {lines.map((line, i) => (
+        <>
+          {i === 2 && (
+            <div class="message">
+              <label for="letter-message" class="message-label">
+                {f.message.before}
+              </label>
+              <textarea
+                id="letter-message"
+                name={f.message.key}
+                rows="4"
+                aria-describedby="letter-message-caption"
+              ></textarea>
+              <span id="letter-message-caption" class="caption">
+                {f.message.caption}
+              </span>
+            </div>
+          )}
+          <p class="line">
+            {line.map((blank) => {
+              const field = f[blank.id];
+              return (
+                <span class="piece">
+                  <span class="before">{field.before}</span>{" "}
+                  <label class:list={["blank", `blank-${blank.id}`]}>
+                    <input
+                      name={field.key}
+                      type={blank.type ?? "text"}
+                      autocomplete={blank.autocomplete}
+                      inputmode={blank.type === "email" ? "email" : undefined}
+                      required={blank.required}
+                      placeholder={
+                        "placeholder" in field ? field.placeholder : undefined
+                      }
+                    />
+                    <span class="caption">
+                      {field.caption}
+                      {blank.required && (
+                        <>
+                          {" "}
+                          <span aria-hidden="true">·</span>{" "}
+                          <span class="required">{letter.required}</span>
+                        </>
+                      )}
+                    </span>
+                  </label>
+                  {"after" in field && <span class="after">{field.after}</span>}
+                </span>
+              );
+            })}
+          </p>
+        </>
+      ))}
+
+      <div class="send">
+        <Button type="submit" class="send-button">
+          {letter.submit}
+        </Button>
+        <p class="privacy">{letter.privacy}</p>
+      </div>
+    </form>
+
+    <div class="roots" aria-hidden="true"></div>
+
+    <address class="card">
+      <p class="card-intro">{letter.direct}</p>
+      <p class="card-name">{site.name}</p>
+      <div class="card-lines">
+        <a href={emailHref} class="card-email">
+          {contact.email}
+        </a>
+        <a href={phoneHref}>{contact.phone}</a>
+        <span>
+          {contact.social.map((link, i) => (
+            <>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              <a href={link.href}>{link.label}</a>
+            </>
+          ))}
+        </span>
+      </div>
+    </address>
+  </div>
+</section>
+
+<style>
+  .letter {
+    max-width: var(--width-page);
+    margin-inline: auto;
+    padding: var(--space-3xl) var(--space-gutter) 0 var(--space-xl);
+    scroll-margin-top: var(--space-m);
+  }
+
+  /* The grove: the tree's tracks around the content. */
+  .grove {
+    --trunk-share: calc(100% * 200 / 1320);
+
+    display: grid;
+    grid-template-columns: var(--trunk-share) minmax(0, 1fr) 18.75rem;
+    grid-template-areas:
+      "canopy canopy canopy"
+      "trunk head card"
+      "trunk divider divider"
+      "trunk form form"
+      "roots roots roots";
+    column-gap: var(--space-2xl);
+  }
+
+  /* Tree ------------------------------------------------------------------------ */
+  .canopy,
+  .trunk,
+  .roots {
+    background-color: var(--color-ink-red);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  .canopy {
+    grid-area: canopy;
+    aspect-ratio: 1320 / 300;
+    -webkit-mask-image: var(--tree-canopy);
+    mask-image: var(--tree-canopy);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: top left;
+    mask-position: top left;
+  }
+
+  /* The trunk stretches to the height of the content beside it. */
+  .trunk {
+    grid-area: trunk;
+    -webkit-mask-image: var(--tree-trunk);
+    mask-image: var(--tree-trunk);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
+
+  .roots {
+    grid-area: roots;
+    aspect-ratio: 1320 / 160;
+    -webkit-mask-image: var(--tree-roots);
+    mask-image: var(--tree-roots);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: top left;
+    mask-position: top left;
+  }
+
+  /* Heading and contact card --------------------------------------------------- */
+  .head {
+    grid-area: head;
+    align-self: end;
+    padding-top: var(--space-2xl);
+  }
+
+  .kicker {
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  .title {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-h2);
+    line-height: 1.05;
+  }
+
+  .text {
+    max-width: 40rem;
+    margin-top: var(--space-m);
+    font-size: var(--text-body-l);
+  }
+
+  .head .placeholder-tag {
+    display: inline-block;
+    margin-top: var(--space-xs);
+  }
+
+  .card {
+    grid-area: card;
+    align-self: end;
+    margin-left: var(--space-l);
+    padding-top: var(--space-m);
+    border-top: var(--rule-hair) solid var(--color-ink-red);
+    font-style: normal;
+  }
+
+  .card-intro {
+    font-style: italic;
+    color: var(--color-ink-muted);
+  }
+
+  .card-name {
+    margin-top: var(--space-3xs);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    line-height: 1.1;
+  }
+
+  .card-lines {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin-top: var(--space-2xs);
+  }
+
+  .card-lines a {
+    color: var(--color-ink);
+    text-underline-offset: 4px;
+  }
+
+  .card-lines .card-email {
+    color: var(--color-ink-red);
+    overflow-wrap: anywhere;
+  }
+
+  .divider {
+    grid-area: divider;
+    height: var(--rule-hair);
+    margin-block: var(--space-4xl) calc(var(--space-3xl) + var(--space-3xs));
+    background: var(--color-rule-soft);
+  }
+
+  /* Letter --------------------------------------------------------------------- */
+  .form {
+    grid-area: form;
+    max-width: var(--letter-measure);
+    padding-bottom: var(--space-6xl);
+  }
+
+  .line {
+    font-size: var(--text-letter);
+    line-height: var(--letter-leading);
+  }
+
+  .line + .line,
+  .message + .line {
+    margin-top: var(--space-3xl);
+  }
+
+  .piece {
+    white-space: nowrap;
+  }
+
+  .blank {
+    display: inline-flex;
+    flex-direction: column;
+    margin-inline: var(--space-3xs);
+    vertical-align: baseline;
+    white-space: normal;
+  }
+
+  .blank input {
+    width: var(--blank-width, 16rem);
+    max-width: 100%;
+    padding: var(--space-3xs);
+    border: 0;
+    border-bottom: var(--blank-rule) solid var(--color-ink-red);
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-blank);
+    font-style: italic;
+    line-height: 1.25;
+  }
+
+  .blank-name {
+    --blank-width: 20rem;
+  }
+
+  .blank-organization,
+  .blank-email {
+    --blank-width: 25rem;
+  }
+
+  .blank-city {
+    --blank-width: 13.125rem;
+  }
+
+  .blank-audience {
+    --blank-width: 23.75rem;
+  }
+
+  .blank-when {
+    --blank-width: 16.25rem;
+  }
+
+  .blank-phone {
+    --blank-width: 15.625rem;
+  }
+
+  .caption {
+    display: block;
+    padding: var(--space-3xs) var(--space-3xs) 0;
+    font-size: var(--text-caption-sm);
+    line-height: 1.3;
+    color: var(--color-ink-muted);
+  }
+
+  .required {
+    color: var(--color-ink-red);
+  }
+
+  /* Focus: the blank turns shaded and gets a second red rule under it. */
+  input:focus,
+  textarea:focus {
+    outline: none;
+    background-color: var(--color-paper-shade);
+  }
+
+  .blank input:focus {
+    box-shadow:
+      0 var(--rule-thick) 0 var(--color-paper),
+      0 calc(var(--rule-thick) + var(--blank-rule)) 0 var(--color-ink-red);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-ink-muted);
+    opacity: 1;
+  }
+
+  /* Message: ruled lines like a sheet of paper. */
+  .message {
+    margin-top: var(--space-xl);
+  }
+
+  .message-label {
+    display: block;
+    font-size: var(--text-letter);
+    line-height: 1.4;
+  }
+
+  .message textarea {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-2xs);
+    padding: 0 var(--space-3xs);
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--letter-ruled-line) - var(--blank-rule)),
+      var(--color-ink-red) calc(var(--letter-ruled-line) - var(--blank-rule))
+        var(--letter-ruled-line)
+    );
+    background-attachment: local;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-blank);
+    font-style: italic;
+    line-height: var(--letter-ruled-line);
+    resize: vertical;
+  }
+
+  .send {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    margin-top: var(--space-3xl);
+  }
+
+  .send :global(.send-button) {
+    padding-inline: var(--space-4xl);
+  }
+
+  .privacy {
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: var(--color-ink-muted);
+  }
+
+  /* Below 1100px: card under the heading, each blank on its own line. */
+  @media (width < 1100px) {
+    .grove {
+      grid-template-columns: var(--trunk-share) minmax(0, 1fr);
+      grid-template-areas:
+        "canopy canopy"
+        "trunk head"
+        "trunk card"
+        "trunk divider"
+        "trunk form"
+        "roots roots";
+    }
+
+    .card {
+      margin: var(--space-2xl) 0 0;
+    }
+
+    .line {
+      line-height: 1.55;
+    }
+
+    .piece,
+    .before {
+      display: block;
+      white-space: normal;
+    }
+
+    .blank {
+      display: flex;
+      margin: var(--space-2xs) 0 var(--space-m);
+    }
+
+    .blank input {
+      width: 100%;
+    }
+
+    /* Sentence punctuation after a blank would sit alone on its own line. */
+    .after {
+      display: none;
+    }
+
+    .line + .line,
+    .message + .line {
+      margin-top: var(--space-l);
+    }
+  }
+
+  /* Phones: narrow trunk and small canopy; the card goes after the roots. */
+  @media (width < 760px) {
+    .letter {
+      --letter-ruled-line: 2.5rem;
+
+      padding: var(--space-l) var(--space-m) 0 var(--space-3xs);
+    }
+
+    .grove {
+      --trunk-share: calc(100% * 36 / 366);
+
+      column-gap: var(--space-xs);
+      grid-template-areas:
+        "canopy canopy"
+        "trunk head"
+        "trunk divider"
+        "trunk form"
+        "roots roots"
+        "card card";
+    }
+
+    .canopy {
+      aspect-ratio: 366 / 150;
+      -webkit-mask-image: var(--tree-canopy-small);
+      mask-image: var(--tree-canopy-small);
+    }
+
+    .trunk {
+      -webkit-mask-image: var(--tree-trunk-narrow);
+      mask-image: var(--tree-trunk-narrow);
+    }
+
+    .roots {
+      aspect-ratio: 366 / 80;
+      -webkit-mask-image: var(--tree-roots-small);
+      mask-image: var(--tree-roots-small);
+    }
+
+    .head {
+      padding-top: var(--space-l);
+    }
+
+    .divider {
+      margin-block: var(--space-xl) var(--space-l);
+    }
+
+    .form {
+      padding-bottom: var(--space-3xl);
+    }
+
+    .card {
+      margin: var(--space-3xs) 0 var(--space-2xs) var(--space-s);
+    }
+
+    .send {
+      align-items: stretch;
+    }
+
+    .send :global(.send-button) {
+      padding-inline: var(--space-m);
+    }
+  }
+</style>

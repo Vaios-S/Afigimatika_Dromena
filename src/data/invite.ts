@@ -81,33 +81,56 @@ export const invite = {
     required: "απαραίτητο",
     /**
      * The letter, in reading order. Each sentence is plain text; each blank is
-     * a field whose caption (under the line) is its label.
+     * a field whose caption (under the line) is its label. `key` is the name
+     * the field has in the email the group receives.
      */
     fields: {
-      name: { before: "Γεια σας, με λένε", caption: "όνομα" },
+      name: {
+        key: "name",
+        before: "Γεια σας, με λένε",
+        caption: "όνομα",
+      },
       organization: {
+        key: "Φορέας",
         before: "και γράφω από",
         caption: "φορέας ή χώρος",
         placeholder: "π.χ. βιβλιοθήκη",
       },
-      city: { before: "στην", caption: "πόλη", after: "." },
+      city: {
+        key: "Πόλη",
+        before: "στην",
+        caption: "πόλη",
+        after: ".",
+      },
       audience: {
+        key: "Κοινό",
         before: "Θα θέλαμε μια αφήγηση για",
         caption: "για ποιους και ποιες ηλικίες",
         placeholder: "π.χ. παιδιά 6 έως 9",
       },
       when: {
+        key: "Πότε",
         before: "γύρω στις",
         caption: "ημερομηνία ή περίοδος",
         placeholder: "π.χ. Μάιος",
         after: ".",
       },
       message: {
+        key: "Μήνυμα",
         before: "Λίγα λόγια ακόμα:",
         caption: "για το κοινό, τον χώρο ή την αφορμή",
       },
-      email: { before: "Μπορείτε να μου απαντήσετε στο", caption: "email" },
-      phone: { before: "ή στο", caption: "τηλέφωνο", after: "." },
+      email: {
+        key: "email",
+        before: "Μπορείτε να μου απαντήσετε στο",
+        caption: "email",
+      },
+      phone: {
+        key: "Τηλέφωνο",
+        before: "ή στο",
+        caption: "τηλέφωνο",
+        after: ".",
+      },
     },
     errors: {
       name: "Πώς να σας λέμε; Γράψτε μας το όνομά σας.",

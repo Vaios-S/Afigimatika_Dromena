@@ -4,6 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { invite } from "../data/invite";
 import Bundle from "../sections/invite/Bundle.astro";
 import Intro from "../sections/invite/Intro.astro";
+import Letter from "../sections/invite/Letter.astro";
 ---
 
 <BaseLayout title={invite.meta.title} description={invite.meta.description}>
@@ -12,6 +13,7 @@ import Intro from "../sections/invite/Intro.astro";
     <AgesFrieze level={2} />
   </section>
   <Bundle />
+  <Letter />
 </BaseLayout>
 
 <style>

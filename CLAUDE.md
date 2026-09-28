@@ -88,6 +88,17 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
    - Run `npm run build` and `npm run lint`.
    - Open the page in the browser at desktop and phone widths: the drawing should be red, sharp, and sit inside its box without being cut off.
 
+### The tree on /proskaleste-mas (the exception)
+
+The tree above, beside and below the letter form is **not** an inline ornament. Its six drawings live in `src/assets/tree/` and are used as CSS masks (`mask-image`, with `-webkit-` prefixes for Safari), painted with the site red. Only the variant for the current screen is downloaded.
+
+- Files: `canopy.svg` (1320x300), `trunk.svg` (200x1000), `roots.svg` (1320x160) for screens from 760px; `canopy-small.svg` (366x150), `trunk-narrow.svg` (36x1000), `roots-small.svg` (366x80) for phones. The trunk's centre line sits at x = 100 (desktop) and x = 18 (phone) in all three files of a set, so they join.
+- **A replacement works through its shape, not its color.** A mask only reads transparency: everything drawn (in any color) shows as red, everything transparent shows the paper. Keep the background transparent; a white or colored background rectangle would turn the whole box red.
+- Because each file is loaded as an image of its own, internal `<mask>`s and `id`s are allowed here (they cannot clash with the page), unlike the inline ornaments.
+- The canopy and roots keep their proportions (`contain`, top left). The trunk is stretched to the height of the form (`preserveAspectRatio="none"` in the file); give its lines `vector-effect="non-scaling-stroke"` so they keep their width when stretched.
+- The tree has its own grid tracks in `Letter.astro` (canopy row, trunk column, roots row), so it can never cover text or fields. The trunk column is 200/1320 of the width (36/366 on phones), which keeps it lined up with the canopy at every size.
+- Check a replacement in Chrome and Safari (or WebKit) at desktop and phone widths.
+
 ## Red thread
 
 - `src/scripts/red-thread.ts` (homepage) is one of two client-side scripts; the other is the storytellers sequence below. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
