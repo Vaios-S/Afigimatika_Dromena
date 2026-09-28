@@ -1,0 +1,303 @@
+---
+/**
+ * The storytellers' bundle: what we bring and what we need, in two columns
+ * with the bundle drawing between them, hanging from a thread with a knot.
+ * Phones: the bundle on top, then the two lists, separated by a wavy thread.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { invite } from "../../data/invite";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+
+const { bundle } = invite;
+const columns = [
+  { ...bundle.bring, id: "bundle-bring", side: "bring" },
+  { ...bundle.need, id: "bundle-need", side: "need" },
+];
+---
+
+<section class="bundle" aria-labelledby="bundle-title">
+  <div class="head">
+    <Ornament name="bundle" class="bundle-mobile" />
+    <p class="kicker">{bundle.kicker}</p>
+    <h2 id="bundle-title" class="title">
+      {bundle.title.text} <em>{bundle.title.accent}</em>
+    </h2>
+    {SHOW_PLACEHOLDER_TAGS && bundle.placeholder && (
+      <span class="placeholder-tag">{site.placeholderTag}</span>
+    )}
+  </div>
+
+  <div class="columns">
+    {columns.map((column, i) => (
+      <>
+        {i === 1 && (
+          <div class="middle" aria-hidden="true">
+            <Ornament name="bundle" class="bundle-drawing" />
+            <Ornament name="bundle-thread" class="hang" />
+            <Ornament name="frieze-knot" class="knot" />
+            <span class="wave">
+              <Ornament name="bundle-wave" />
+              <Ornament name="frieze-knot" class="knot" />
+              <Ornament name="bundle-wave" class="flip" />
+            </span>
+          </div>
+        )}
+        <div class:list={["column", column.side]}>
+          <h3 id={column.id} class="column-title">
+            {column.title}
+          </h3>
+          <Ornament name="bundle-underline" class="underline" />
+          <ul role="list" aria-labelledby={column.id}>
+            {column.items.map((item) => (
+              <li>
+                <Ornament name={item.icon} class="icon" />
+                <span>{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </>
+    ))}
+  </div>
+</section>
+
+<style>
+  .bundle {
+    padding: var(--space-section) var(--space-gutter);
+    color: var(--color-ink);
+  }
+
+  /* Heading -------------------------------------------------------------------- */
+  .head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .kicker {
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  .title {
+    max-width: 51.25rem;
+    margin-top: var(--space-s);
+    font-size: var(--text-cta);
+    line-height: 1.1;
+  }
+
+  .head .placeholder-tag {
+    margin-top: var(--space-s);
+  }
+
+  .head :global(.bundle-mobile) {
+    display: none;
+  }
+
+  /* Columns -------------------------------------------------------------------- */
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 11.25rem minmax(0, 1fr);
+    align-items: stretch;
+    gap: var(--space-2xl);
+    max-width: 73.75rem;
+    margin: var(--space-6xl) auto 0;
+  }
+
+  .column-title {
+    font-size: var(--text-list-title);
+    font-style: italic;
+    line-height: 1.1;
+    color: var(--color-ink-red);
+  }
+
+  .column :global(.underline) {
+    display: block;
+    width: 13.125rem;
+    height: 0.625rem;
+    margin-top: var(--space-2xs);
+    color: var(--color-ink-red);
+  }
+
+  .column ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-l);
+    margin-top: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .column li {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-l);
+    font-family: var(--font-display);
+    font-size: var(--text-entry);
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .column :global(.icon) {
+    width: 4.75rem;
+    height: 4.75rem;
+    color: var(--color-ink-red);
+  }
+
+  /* Right column mirrors the left: text first, drawing on the outer edge. */
+  .need {
+    text-align: right;
+  }
+
+  .need :global(.underline) {
+    margin-left: auto;
+    transform: scaleX(-1);
+  }
+
+  .need li {
+    grid-template-columns: minmax(0, 1fr) 4.75rem;
+  }
+
+  .need li :global(.icon) {
+    order: 2;
+  }
+
+  /* Middle: the bundle hangs from a thread down to a knot. */
+  .middle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-ink-red);
+  }
+
+  .middle :global(.bundle-drawing) {
+    flex: none;
+    width: 9.375rem;
+    height: 9.375rem;
+  }
+
+  .middle :global(.hang) {
+    flex: 1;
+    width: 1.5rem;
+    min-height: 5rem;
+  }
+
+  .middle > :global(.knot) {
+    flex: none;
+    width: 1.25rem;
+    height: 1.5rem;
+  }
+
+  .wave {
+    display: none;
+  }
+
+  /* Tablet: the drawings shrink so the three columns keep their room. */
+  @media (width < 1100px) {
+    .columns {
+      grid-template-columns: minmax(0, 1fr) 7.5rem minmax(0, 1fr);
+      gap: var(--space-xl);
+    }
+
+    .middle :global(.bundle-drawing) {
+      width: 7.5rem;
+      height: 7.5rem;
+    }
+
+    .column li {
+      grid-template-columns: 3.5rem minmax(0, 1fr);
+      gap: var(--space-s);
+    }
+
+    .need li {
+      grid-template-columns: minmax(0, 1fr) 3.5rem;
+    }
+
+    .column :global(.icon) {
+      width: 3.5rem;
+      height: 3.5rem;
+    }
+  }
+
+  /* Phones: one column, bundle on top, lists split by a wavy thread. */
+  @media (width < 760px) {
+    .bundle {
+      padding-block: var(--space-5xl);
+    }
+
+    .head :global(.bundle-mobile) {
+      display: block;
+      width: 6.5rem;
+      height: 6.5rem;
+      margin-bottom: var(--space-m);
+      color: var(--color-ink-red);
+    }
+
+    .title {
+      margin-top: var(--space-xs);
+    }
+
+    .columns {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      margin-top: var(--space-3xl);
+    }
+
+    .middle {
+      flex-direction: row;
+    }
+
+    .middle > :global(svg) {
+      display: none;
+    }
+
+    .wave {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: var(--space-2xs);
+      margin-block: var(--space-2xl);
+    }
+
+    .wave :global(svg) {
+      flex: 1;
+      height: 1.125rem;
+    }
+
+    .wave :global(.knot) {
+      flex: none;
+      width: 1.25rem;
+      height: 1.5rem;
+    }
+
+    .wave :global(.flip) {
+      transform: scaleY(-1);
+    }
+
+    .column ul {
+      gap: var(--space-s);
+      margin-top: var(--space-m);
+    }
+
+    .need {
+      text-align: left;
+    }
+
+    .need :global(.underline) {
+      margin-left: 0;
+      transform: none;
+    }
+
+    .need li {
+      grid-template-columns: 3.5rem minmax(0, 1fr);
+    }
+
+    .need li :global(.icon) {
+      order: 0;
+    }
+  }
+</style>

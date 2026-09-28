@@ -62,6 +62,11 @@
     1.095rem + 0.381vw,
     1.4375rem
   ); /* 19 → 23, frieze captions */
+  --text-list-title: clamp(
+    1.75rem,
+    1.518rem + 0.952vw,
+    2.375rem
+  ); /* 28 → 38, bundle column titles */
   --text-numeral: clamp(
     2.75rem,
     2.193rem + 2.286vw,
