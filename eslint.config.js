@@ -23,6 +23,11 @@ export default defineConfig(
         "error",
         { ul: ["list"], ol: ["list"] },
       ],
+      // Scrollable strips are focusable labelled regions, so keyboard users can scroll them.
+      "astro/jsx-a11y/no-noninteractive-tabindex": [
+        "error",
+        { tags: [], roles: ["tabpanel", "region"] },
+      ],
       "no-restricted-syntax": [
         "error",
         { selector: `Literal[value=${emDash}]`, message: noEmDash },

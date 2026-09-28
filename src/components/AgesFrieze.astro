@@ -1,0 +1,323 @@
+---
+/**
+ * Ages statement ("Για ηλικίες από 4 έως 104") and the frieze of places we
+ * are invited to, strung on a red thread: a yarn ball, a knot after each
+ * place, a curl at the end. Shared by the homepage and /proskaleste-mas.
+ * Phones: the frieze becomes a sideways-scrolling strip that is keyboard
+ * reachable, and a fade on its right edge shows there is more.
+ */
+import { ages, SHOW_PLACEHOLDER_TAGS, site } from "../data/site";
+import Ornament from "./Ornament.astro";
+
+interface Props {
+  /** Heading level of the statement; the places title is one level below. */
+  level: 2 | 3;
+  /** Show only the places marked home: true (homepage). */
+  short?: boolean;
+  class?: string;
+}
+
+const { level, short = false, class: className } = Astro.props;
+const Heading = `h${level}` as "h2" | "h3";
+const SubHeading = `h${level + 1}` as "h3" | "h4";
+const places = short ? ages.places.filter((place) => place.home) : ages.places;
+const id = short ? "places-home" : "places";
+---
+
+<div class:list={["ages-frieze", className]}>
+  <div class="statement">
+    <Heading class="ages">
+      <span class="ages-label">{ages.label}</span>
+      <span class="range">
+        <span class="pair">
+          <em class="word">{ages.from.word}</em>
+          <span class="number">{ages.from.value}</span>
+        </span>
+        <span class="pair">
+          <em class="word">{ages.to.word}</em>
+          <em class="number accent">{ages.to.value}</em>
+        </span>
+      </span>
+    </Heading>
+    <div class="rule" aria-hidden="true">
+      <span></span>
+    </div>
+    <p class="line">{ages.line}</p>
+    {SHOW_PLACEHOLDER_TAGS && ages.placeholder && (
+      <span class="placeholder-tag">{site.placeholderTag}</span>
+    )}
+  </div>
+
+  <SubHeading id={id} class="label places-title">
+    {ages.placesTitle}
+  </SubHeading>
+  <div class="strip" role="region" aria-labelledby={id} tabindex="0">
+    <ul class="places" role="list" aria-label={ages.stripLabel}>
+      {places.map((place, i) => (
+        <li class="place">
+          <Ornament
+            name={place.vignette}
+            class="vignette"
+            preserveAspectRatio="xMidYMax meet"
+          />
+          <div class="thread" aria-hidden="true">
+            {i === 0 && <Ornament name="frieze-ball" class="ball" />}
+            <Ornament name="frieze-thread" class="line-segment" />
+            {i < places.length - 1 ? (
+              <Ornament name="frieze-knot" class="knot" />
+            ) : (
+              <Ornament name="frieze-end" class="end" />
+            )}
+          </div>
+          <span class="place-name">{place.name}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  /* Statement ------------------------------------------------------------------ */
+  .statement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .ages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: var(--weight-regular);
+    line-height: 1;
+  }
+
+  .ages-label {
+    font-size: var(--text-ages-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-ink-red);
+  }
+
+  .range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    column-gap: 0.18em;
+    font-size: var(--text-ages-number);
+    font-variant-numeric: oldstyle-nums;
+  }
+
+  .pair {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-m);
+  }
+
+  .word {
+    font-size: var(--text-ages-word);
+    color: var(--color-ink-muted);
+  }
+
+  .number {
+    letter-spacing: -0.02em;
+  }
+
+  .ages .accent {
+    color: var(--color-ink-red);
+  }
+
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    width: min(35rem, 100%);
+    margin-top: var(--space-m);
+    color: var(--color-ink-red);
+  }
+
+  .rule::before,
+  .rule::after {
+    content: "";
+    flex: 1;
+    height: var(--rule-hair);
+    background: currentColor;
+  }
+
+  /* Small diamond in the middle of the rule. */
+  .rule span {
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .line {
+    max-width: 38.75rem;
+    margin-top: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--text-entry);
+    font-style: italic;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
+  .statement .placeholder-tag {
+    margin-top: var(--space-s);
+  }
+
+  /* Places --------------------------------------------------------------------- */
+  .places-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-s);
+    margin-top: calc(var(--space-7xl) + var(--space-2xs));
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .places-title::before,
+  .places-title::after {
+    content: "";
+    width: var(--space-2xl);
+    height: var(--rule-thin);
+    background: currentColor;
+  }
+
+  .strip {
+    margin-top: var(--space-2xl);
+  }
+
+  /* The ball and the end curl hang outside the first and last place. */
+  .places {
+    display: flex;
+    align-items: flex-start;
+    padding: 0 var(--frieze-cap);
+    list-style: none;
+
+    --frieze-cap: 1.875rem;
+  }
+
+  .place {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .place :global(.vignette) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    color: var(--color-ink-red);
+  }
+
+  .thread {
+    position: relative;
+    align-self: stretch;
+    height: 1.75rem;
+    margin-top: var(--space-3xs);
+    color: var(--color-ink-red);
+  }
+
+  .thread :global(.line-segment) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .thread :global(.ball),
+  .thread :global(.end) {
+    position: absolute;
+    top: 0;
+    width: var(--frieze-cap);
+    height: 1.75rem;
+  }
+
+  .thread :global(.ball) {
+    right: 100%;
+  }
+
+  .thread :global(.end) {
+    left: 100%;
+  }
+
+  .thread :global(.knot) {
+    position: absolute;
+    top: var(--space-3xs);
+    right: -0.625rem;
+    width: 1.25rem;
+    height: 1.5rem;
+  }
+
+  .place-name {
+    margin-top: var(--space-xs);
+    padding-inline: var(--space-2xs);
+    font-family: var(--font-display);
+    font-size: var(--text-place);
+    font-style: italic;
+    line-height: 1.2;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  /* Phones: a sideways strip, cut off at the right edge with a fade. */
+  @media (width < 760px) {
+    .places-title {
+      margin-top: var(--space-5xl);
+    }
+
+    .places-title::before,
+    .places-title::after {
+      display: none;
+    }
+
+    .strip {
+      margin: var(--space-l) calc(-1 * var(--space-gutter)) 0;
+      padding: 0 var(--space-gutter) var(--space-s);
+      overflow-x: auto;
+      scrollbar-color: var(--color-ink-red) transparent;
+      scrollbar-width: thin;
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #000 calc(100% - var(--space-2xl)),
+        transparent
+      );
+      mask-image: linear-gradient(
+        to right,
+        #000 calc(100% - var(--space-2xl)),
+        transparent
+      );
+    }
+
+    /* The edge fade would hide an outside outline; draw the focus ring inside. */
+    .strip:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--color-focus);
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .places {
+      width: max-content;
+      padding-right: calc(var(--frieze-cap) + var(--space-2xl));
+    }
+
+    .place {
+      flex: 0 0 8.75rem;
+    }
+
+    .place :global(.vignette) {
+      width: 7.5rem;
+    }
+
+    .place-name {
+      margin-top: var(--space-2xs);
+    }
+  }
+</style>

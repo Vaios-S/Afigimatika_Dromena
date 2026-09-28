@@ -42,6 +42,26 @@
     5.75rem
   ); /* 44 → 92, inner page h1 */
   --text-h2: clamp(2.375rem, 1.818rem + 2.286vw, 3.875rem); /* 38 → 62 */
+  --text-ages-number: clamp(
+    6rem,
+    4.329rem + 6.857vw,
+    10.5rem
+  ); /* 96 → 168, "4 έως 104" */
+  --text-ages-word: clamp(
+    1.875rem,
+    1.271rem + 2.476vw,
+    3.5rem
+  ); /* 30 → 56, "από", "έως" */
+  --text-ages-label: clamp(
+    0.8125rem,
+    0.743rem + 0.286vw,
+    1rem
+  ); /* 13 → 16, "Για ηλικίες" */
+  --text-place: clamp(
+    1.1875rem,
+    1.095rem + 0.381vw,
+    1.4375rem
+  ); /* 19 → 23, frieze captions */
   --text-numeral: clamp(
     2.75rem,
     2.193rem + 2.286vw,
@@ -61,7 +81,6 @@
   --text-verse: clamp(1.8125rem, 1.232rem + 2.381vw, 3.375rem); /* 29 → 54 */
   --text-quote: clamp(1.75rem, 1.379rem + 1.524vw, 2.75rem); /* 28 → 44 */
   --text-quote-sm: clamp(1.375rem, 1.282rem + 0.381vw, 1.625rem); /* 22 → 26 */
-  --text-tile-lg: clamp(2.25rem, 1.971rem + 1.143vw, 3rem); /* 36 → 48 */
   --text-title: clamp(1.625rem, 1.486rem + 0.571vw, 2rem); /* 26 → 32 */
   --text-logo: clamp(1.3125rem, 1.173rem + 0.571vw, 1.6875rem); /* 21 → 27 */
   --text-tile: clamp(1.25rem, 1.157rem + 0.381vw, 1.5rem); /* 20 → 24 */

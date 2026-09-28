@@ -127,34 +127,43 @@ export const redThread = {
   ending: { text: "…και το παραμύθι", accent: "συνεχίζεται." },
 };
 
-interface Audience {
-  name: string;
-  /** File name in src/assets/ornaments, without ".svg". */
-  icon: string;
-  /** Only the featured (first) tile shows a note. */
-  note?: string;
-}
-
 export const about = {
   kicker: "Η ομάδα",
   title: { text: "Τρεις αφηγήτριες,", accent: "ένα κόκκινο νήμα" },
   text: "Είμαστε τρεις αφηγήτριες από τη Θεσσαλονίκη. Ερευνούμε λαϊκά παραμύθια, μύθους και θρύλους από κάθε γωνιά του κόσμου και τα λέμε ζωντανά, με τη φωνή και χωρίς βιβλίο στο χέρι, όπως λέγονταν πάντα.",
   link: { label: "Γνωρίστε την ομάδα", href: routes.team },
-  audiencesTitle: "Πού και για ποιους αφηγούμαστε",
-  /** The first entry is the featured tile. */
-  audiences: [
-    {
-      name: "Παιδιά",
-      icon: "audience-children",
-      note: "Το πρώτο και πιο αγαπημένο μας κοινό.",
-    },
-    { name: "Σχολεία", icon: "audience-schools" },
-    { name: "Βιβλιοθήκες", icon: "audience-libraries" },
-    { name: "Φεστιβάλ", icon: "audience-festivals" },
-    { name: "Καφέ & πολιτιστικοί χώροι", icon: "audience-cafes" },
-    { name: "Δήμοι", icon: "audience-municipalities" },
-    { name: "Ενήλικες", icon: "audience-adults" },
-  ] satisfies Audience[],
+};
+
+interface Place {
+  name: string;
+  /** Drawing: a file in src/assets/ornaments, without ".svg". */
+  vignette: string;
+  /** Also shown in the shorter frieze on the homepage. */
+  home?: boolean;
+}
+
+/**
+ * Ages statement and places frieze, shared by the homepage (About section,
+ * places marked home: true) and /proskaleste-mas (all places).
+ */
+export const ages = {
+  label: "Για ηλικίες",
+  from: { word: "από", value: "4" },
+  to: { word: "έως", value: "104" },
+  line: "Κάθε αφήγηση πλάθεται για όσους κάθονται απέναντί μας.",
+  placeholder: true,
+  placesTitle: "Εκεί που μας καλούν",
+  /** Accessible name of the sideways-scrolling strip on phones. */
+  stripLabel: "Χώροι όπου αφηγούμαστε, κυλήστε οριζόντια",
+  places: [
+    { name: "σχολεία", vignette: "vignette-schools", home: true },
+    { name: "βιβλιοθήκες", vignette: "vignette-libraries", home: true },
+    { name: "πλατείες", vignette: "vignette-squares", home: true },
+    { name: "φεστιβάλ", vignette: "vignette-festivals", home: true },
+    { name: "καφέ", vignette: "vignette-cafes", home: true },
+    { name: "αυλές και κήπους", vignette: "vignette-gardens" },
+    { name: "πολιτιστικά κέντρα", vignette: "vignette-cultural-centres" },
+  ] satisfies Place[],
 };
 
 export const testimonials = {

@@ -1,4 +1,5 @@
 ---
+import AgesFrieze from "../components/AgesFrieze.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { invite } from "../data/invite";
 import Intro from "../sections/invite/Intro.astro";
@@ -6,4 +7,22 @@ import Intro from "../sections/invite/Intro.astro";
 
 <BaseLayout title={invite.meta.title} description={invite.meta.description}>
   <Intro />
+  <section class="ages">
+    <AgesFrieze level={2} />
+  </section>
 </BaseLayout>
+
+<style>
+  .ages {
+    max-width: calc(var(--width-content) + 2 * var(--space-gutter));
+    margin-inline: auto;
+    padding: var(--space-7xl) var(--space-gutter)
+      calc(var(--space-section) + var(--space-2xs));
+  }
+
+  @media (width < 760px) {
+    .ages {
+      padding-block: var(--space-4xl) var(--space-5xl);
+    }
+  }
+</style>
