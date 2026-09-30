@@ -98,6 +98,31 @@
     0.891rem + 0.19vw,
     1.0625rem
   ); /* 15 → 17, event month */
+  --text-post-title: clamp(
+    2.5rem,
+    1.664rem + 3.429vw,
+    4.75rem
+  ); /* 40 → 76, post title */
+  --text-post-title-long: clamp(
+    1.9375rem,
+    1.311rem + 2.571vw,
+    3.625rem
+  ); /* 31 → 58, post title over LONG_TITLE characters */
+  --text-article: clamp(
+    1.125rem,
+    1.055rem + 0.286vw,
+    1.3125rem
+  ); /* 18 → 21, post body */
+  --text-article-h2: clamp(
+    1.6875rem,
+    1.525rem + 0.667vw,
+    2.125rem
+  ); /* 27 → 34, post body headings */
+  --text-article-quote: clamp(
+    1.5rem,
+    1.361rem + 0.571vw,
+    1.875rem
+  ); /* 24 → 30, post body quotes */
   --text-list-title: clamp(
     1.75rem,
     1.518rem + 0.952vw,
@@ -150,6 +175,9 @@
   --leading-verse: 1.2;
   --leading-quote: 1.3;
   --leading-body: 1.6;
+  --leading-article: 1.8; /* post body */
+  --leading-article-mobile: 1.72;
+  --leading-caption: 1.45; /* photo captions */
 
   --tracking-label: 0.16em;
   --tracking-label-wide: 0.18em;
@@ -257,6 +285,27 @@
     color-mix(in srgb, var(--color-ink) 35%, transparent);
   --poster-pin: 18px;
   --poster-tilt: 1.4deg; /* the most any announcement leans */
+
+  /* ------------------------------------------------------------------------
+     Post page (/nea/<slug>)
+     ------------------------------------------------------------------------ */
+  --width-post: 68.75rem; /* 1100, title frame, cover, related posts */
+  --width-article: 42.5rem; /* 680, body measure */
+  --article-breakout: 3.75rem; /* 60, body photos reach past the measure on each side (desktop) */
+  --space-post: clamp(
+    2.5rem,
+    1.571rem + 3.81vw,
+    5rem
+  ); /* 40 → 80, above the body */
+  --initial-size: clamp(
+    4.25rem,
+    3.693rem + 2.286vw,
+    5.75rem
+  ); /* 68 → 92, boxed drop cap */
+  /* Double-ruled frame: an inner red hairline inside the paper gap. */
+  --frame-inner:
+    inset 0 0 0 var(--rule-thick) var(--color-paper),
+    inset 0 0 0 calc(var(--rule-thick) + var(--rule-hair)) var(--color-ink-red);
 
   /* ------------------------------------------------------------------------
      Motion

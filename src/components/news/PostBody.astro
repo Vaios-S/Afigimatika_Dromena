@@ -1,0 +1,278 @@
+---
+/**
+ * The body of a post: the only place post bodies are rendered and styled.
+ * Today the body is Markdown, shaped by src/lib/post-markdown.ts (drop cap,
+ * figures, quotes). With Sanity, render the Portable Text here with the same
+ * markup and these styles keep working.
+ *
+ * Markdown output cannot hold components, so the leaf before headings and
+ * the flowers on quotes and short posts are CSS masks of the ornament files,
+ * painted with the site red.
+ */
+import { loadPostBody, type Post } from "../../lib/news";
+
+interface Props {
+  post: Post;
+}
+
+const Content = await loadPostBody(Astro.props.post);
+---
+
+<div class="post-body">
+  <Content />
+</div>
+
+<style>
+  .post-body {
+    display: flow-root;
+    font-size: var(--text-article);
+    line-height: var(--leading-article);
+  }
+
+  .post-body > :global(* + *) {
+    margin-top: var(--space-l);
+  }
+
+  .post-body :global(a) {
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: var(--space-3xs);
+  }
+
+  .post-body :global(a:hover) {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Drop cap: a red box with a paper letter and an inner paper ring. */
+  .post-body :global(.initial) {
+    float: left;
+    width: var(--initial-size);
+    height: var(--initial-size);
+    margin: var(--space-2xs) var(--space-m) 0 0;
+    background: var(--color-ink-red);
+    box-shadow:
+      inset 0 0 0 var(--button-ring) var(--color-ink-red),
+      inset 0 0 0 calc(var(--button-ring) + var(--rule-hair)) var(--color-paper);
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: calc(var(--initial-size) * 0.84);
+    line-height: calc(var(--initial-size) * 1.02);
+    text-align: center;
+  }
+
+  /* Headings ---------------------------------------------------------------- */
+  .post-body > :global(h2) {
+    margin-top: var(--space-4xl);
+    font-size: var(--text-article-h2);
+    font-style: italic;
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-title);
+    text-wrap: pretty;
+  }
+
+  .post-body > :global(h2)::before {
+    content: "";
+    display: inline-block;
+    width: 0.9em;
+    height: 0.48em;
+    margin-right: var(--space-xs);
+    background: var(--color-ink-red);
+    -webkit-mask: url("../../assets/ornaments/oak-leaf.svg") center / contain
+      no-repeat;
+    mask: url("../../assets/ornaments/oak-leaf.svg") center / contain no-repeat;
+  }
+
+  /* h3 in small capitals: stored in normal case, uppercased by CSS. */
+  .post-body > :global(h3) {
+    margin-top: var(--space-2xl);
+    font-size: var(--text-body-l);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .post-body > :global(:is(h2, h3) + *) {
+    margin-top: var(--space-s);
+  }
+
+  /* Lists: red diamonds, or quiet plain numbers ------------------------------ */
+  .post-body :global(:is(ul, ol)) {
+    padding: 0;
+  }
+
+  .post-body :global(li) {
+    padding-block: 0.33em;
+    line-height: 1.65;
+  }
+
+  .post-body :global(ul) {
+    list-style: none;
+  }
+
+  .post-body :global(ul > li) {
+    position: relative;
+    padding-left: calc(var(--space-l) + var(--space-xs));
+  }
+
+  .post-body :global(ul > li)::before {
+    content: "";
+    position: absolute;
+    top: calc(0.825em + 0.33em - 3.5px);
+    left: 0.45rem;
+    width: 7px;
+    height: 7px;
+    background: var(--color-ink-red);
+    transform: rotate(45deg);
+  }
+
+  .post-body :global(ol) {
+    padding-left: 1.6em;
+  }
+
+  .post-body :global(ol > li)::marker {
+    color: var(--color-ink-muted);
+  }
+
+  /* Photos ------------------------------------------------------------------ */
+  .post-body > :global(figure:not(.quote)) {
+    margin-top: var(--space-3xl);
+  }
+
+  .post-body :global(figure:not(.quote) img) {
+    width: 100%;
+    height: auto;
+    padding: var(--space-2xs);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    background: var(--color-paper);
+    box-shadow: var(--frame-inner);
+  }
+
+  .post-body :global(figure:not(.quote) figcaption) {
+    margin-top: var(--space-xs);
+    color: var(--color-ink-muted);
+    font-size: var(--text-small);
+    font-style: italic;
+    line-height: var(--leading-caption);
+  }
+
+  .post-body > :global(figure:not(.quote) + *) {
+    margin-top: var(--space-2xl);
+  }
+
+  /* Quotes: a small flower, the words in italic, the name between two rules. */
+  .post-body > :global(.quote) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-block: var(--space-4xl);
+    text-align: center;
+  }
+
+  .post-body > :global(.quote)::before,
+  .post-body:has(> :global(:only-child))::after {
+    content: "";
+    width: 1.875rem;
+    height: 1.875rem;
+    background: var(--color-ink-red);
+    -webkit-mask: url("../../assets/ornaments/flower.svg") center / contain
+      no-repeat;
+    mask: url("../../assets/ornaments/flower.svg") center / contain no-repeat;
+  }
+
+  .post-body :global(blockquote) {
+    margin-top: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--text-article-quote);
+    font-style: italic;
+    line-height: var(--leading-quote);
+    quotes: "«" "»";
+    text-wrap: balance;
+  }
+
+  .post-body :global(blockquote p) {
+    text-wrap: balance;
+  }
+
+  .post-body :global(blockquote p + p) {
+    margin-top: var(--space-xs);
+  }
+
+  .post-body :global(blockquote > p:first-child)::before {
+    content: open-quote;
+  }
+
+  .post-body :global(blockquote > p:last-child)::after {
+    content: close-quote;
+  }
+
+  .post-body :global(.quote figcaption) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-s);
+    color: var(--color-ink-muted);
+    font-size: var(--text-small);
+  }
+
+  .post-body :global(.quote figcaption)::before,
+  .post-body :global(.quote figcaption)::after {
+    content: "";
+    flex: none;
+    width: var(--space-l);
+    height: var(--rule-hair);
+    background: var(--color-ink-red);
+  }
+
+  /* A one-paragraph post closes with a small flower, like a finished page. */
+  .post-body:has(> :global(:only-child))::after {
+    display: block;
+    clear: both;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: var(--space-2xl) auto 0;
+  }
+
+  @media (width >= 1100px) {
+    .post-body > :global(figure:not(.quote)) {
+      margin-inline: calc(-1 * var(--article-breakout));
+    }
+
+    .post-body :global(figure:not(.quote) img) {
+      padding: calc(var(--space-2xs) + var(--rule-thin));
+    }
+
+    .post-body :global(figure:not(.quote) figcaption) {
+      padding-inline: var(--article-breakout);
+      font-size: var(--text-body);
+    }
+  }
+
+  @media (width < 760px) {
+    .post-body {
+      line-height: var(--leading-article-mobile);
+    }
+
+    .post-body > :global(* + *) {
+      margin-top: var(--space-m);
+    }
+
+    .post-body :global(.initial) {
+      margin: var(--space-3xs) var(--space-s) 0 0;
+    }
+
+    .post-body > :global(h2) {
+      margin-top: var(--space-2xl);
+    }
+
+    .post-body > :global(figure:not(.quote)) {
+      margin-top: var(--space-xl);
+    }
+
+    .post-body > :global(.quote) {
+      margin-block: var(--space-2xl);
+    }
+
+    .post-body > :global(.quote)::before {
+      width: 1.625rem;
+      height: 1.625rem;
+    }
+  }
+</style>

@@ -73,6 +73,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
    - Large dragon (`/nea` intro): `dragon-corner.svg` (desktop, shown up to 560x480) and `dragon-corner-small.svg` (phones, 170x146, heavier line). Both 560:480. A different drawing from the storytellers' `dragon.svg`.
    - Places frieze (homepage and `/proskaleste-mas`): `vignette-schools.svg`, `vignette-libraries.svg`, `vignette-squares.svg`, `vignette-festivals.svg`, `vignette-cafes.svg`, `vignette-gardens.svg`, `vignette-cultural-centres.svg` (4:3, about 160x120), plus the thread parts `frieze-ball.svg`, `frieze-knot.svg`, `frieze-thread.svg`, `frieze-end.svg`. The places and which ones the homepage shows (`home: true`) are in `ages` in `site.ts`.
    - Storytellers' bundle (`/proskaleste-mas`): `bundle.svg` (the bundle itself) and the list drawings `bundle-lantern.svg`, `bundle-book.svg`, `bundle-drum.svg`, `bundle-spool.svg`, `bundle-door.svg`, `bundle-moon.svg`, `bundle-listeners.svg`, `bundle-seat.svg` (all square), plus the thread parts `bundle-thread.svg`, `bundle-wave.svg`, `bundle-underline.svg`. Which drawing goes with which line is set in `invite.ts`.
+   - Post title frame (`/nea/<slug>`): `nouveau-top.svg` (1100x150) and `nouveau-base.svg` (1100x110) with `nouveau-stem.svg` (220x1000) for screens from 760px; `nouveau-top-small.svg` (350x96), `nouveau-base-small.svg` (350x40) and `nouveau-stem-slim.svg` (36x1000) for phones. The stems stretch to the title's height: they keep `preserveAspectRatio="none"` on the root and `vector-effect="non-scaling-stroke"` on their lines (the only ornaments allowed these). The right stem is the left one mirrored by CSS. The stem lines must meet the ends of the top and base: at x = 128, 142, 188 (dotted) and 200 on the left (mirrored on the right) for desktop, and x = 18 for phones.
    - `oak-leaf.svg`, `oak-rule.svg`, `flower.svg`, `crest.svg`, `crest-yarn.svg`, `yarn-ball.svg`, `corner.svg`, `corner-small.svg`, `sprig.svg`, `quote-mark.svg`.
 2. **One color only.** Draw in a single color. In the SVG every `fill` and `stroke` must be `currentColor` (or `none`), never a color code such as `#A3261C`. The site paints it with its own red, so the color can change in one place.
 3. **Keep it simple inside.** No embedded images, no gradients, no `<style>` blocks, no text (convert text to outlines), and no `id` attributes (masks, clip paths and filters need IDs, which break when an ornament appears more than once on a page). Cut-outs should be real holes in the shape, not masks.
@@ -143,11 +144,28 @@ Posts and events will come from Sanity once all external connections are set up.
 ### Adding a post by hand (until Sanity)
 
 1. Create a folder named after the slug: `src/content/news/<slug>/`.
-2. In it, create `index.md` with the frontmatter fields above (copy an existing post as a starting point) and the text below the frontmatter in Markdown: paragraphs, `## ` subheadings, `> ` quotes, `- ` lists.
+2. In it, create `index.md` with the frontmatter fields above (copy an existing post as a starting point) and the text below the frontmatter in Markdown (see "Writing the body" below).
 3. Put the post's photos in the same folder and refer to them relatively:
    - cover or gallery item: `image: ./cover.jpg` with its `alt` (and `caption` if wanted);
    - a photo inside the text: `![alt text](./photo.jpg "caption")`.
 4. Run `npm run build`; a missing field, a bad slug or a missing photo stops the build with the reason.
+
+### Writing the body
+
+- Paragraphs are separated by an empty line. The first paragraph gets the red drop cap automatically, when it starts with a letter (not with « or a number).
+- `## Heading` is a subheading (italic, with a leaf). `### Heading` is a small one, shown in capitals.
+- `- item` makes a list with red diamonds; `1. item` a numbered list with plain, quiet numbers.
+- A photo on its own line, `![alt text](./photo.jpg "caption")`, becomes a framed figure with the caption under it. Leave out the quoted caption if there is none.
+- `> text` is a quote, shown centred with a small flower. Do not type « » around it; they are added. For an attribution, end the quote with a line starting with an en dash (–):
+  ```
+  > Η αφήγηση δεν είναι ανάγνωση.
+  >
+  > – από το άρθρο της «Καθημερινής»
+  ```
+- Links: `[text](https://...)`, shown in red.
+- A post with a single paragraph ends with a small flower, so it does not look unfinished.
+
+These rules are applied by `src/lib/post-markdown.ts` (a Sätteri hast plugin registered in `astro.config.mjs`) and styled in `PostBody.astro`. Markdown output cannot contain components, so the leaf and the flowers in the body are CSS masks of `oak-leaf.svg` and `flower.svg` (a second exception to inline ornaments, after the tree).
 
 Adding an event: add an entry to `src/content/events.json` with a unique `id` (latin, like a slug).
 
@@ -173,11 +191,17 @@ All listing pages are real static pages, so the filter and the pagination work w
 
 `src/pages/nea/index.astro` builds `/nea`; `src/pages/nea/[...listing].astro` builds every other listing page from `getListingPaths()`. The events board appears only on `/nea`. Page size: `POSTS_PER_PAGE` in `src/data/news.ts`.
 
+### Post page
+
+- `src/pages/nea/[slug].astro`: breadcrumb, the art nouveau title frame (category, title, date, venue and city when set), the cover, the body and a quiet link back to `/nea`. No footer invitation (`footerCta={false}`).
+- The frame is a fixed top and base with stems that stretch to the height of the title, so it holds any title length. Titles longer than `LONG_TITLE` characters (a constant at the top of the page) are set smaller.
+- The "ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ" tag on posts is `news.post.placeholder` in `src/data/news.ts`; set it to `false` when the sample posts are replaced by real ones.
+
 ### Switching to Sanity
 
 1. Create the Sanity schema with the same fields as above (post, image with alt and caption, event).
 2. In `src/lib/news.ts`, reimplement the functions marked SOURCE (`loadPosts`, `loadEvents`, `loadPostBody`) with Sanity queries that return the same `Post` and `NewsEvent` objects. Images become Sanity CDN URLs with `width` and `height` in `NewsImage`. `Photo.astro` already renders a remote URL (it needs `width` and `height`); add `cdn.sanity.io` to `image.domains` in `astro.config.mjs` so Astro optimizes those images.
-3. In `PostBody.astro`, render Portable Text instead of the Markdown content.
+3. In `PostBody.astro`, render Portable Text instead of the Markdown content, with the same markup `post-markdown.ts` produces today (drop cap spans, `figure`/`figcaption`, `figure.quote`), so the styles keep working. Then remove the plugin from `astro.config.mjs`.
 4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`.
 5. Pages and the other components stay as they are.
 

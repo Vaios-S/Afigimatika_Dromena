@@ -1,0 +1,340 @@
+---
+/**
+ * A post: /nea/<slug>. One template fed only by the post fields. The art
+ * nouveau frame has a fixed top and base and stems that stretch, so it holds
+ * a title of any length. No footer invitation here; the way back is a quiet
+ * text link.
+ */
+import Ornament from "../../components/Ornament.astro";
+import Photo from "../../components/Photo.astro";
+import PostBody from "../../components/news/PostBody.astro";
+import { categories, news } from "../../data/news";
+import { routes, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { dateParts, getPosts, type Post } from "../../lib/news";
+
+/** Titles longer than this (in characters) are set smaller. */
+const LONG_TITLE = 40;
+
+export async function getStaticPaths() {
+  return (await getPosts()).map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const copy = news.post;
+const date = dateParts(post.date);
+const place = [post.venue, post.city].filter(Boolean).join(", ");
+const long = post.title.length > LONG_TITLE;
+---
+
+<BaseLayout title={post.title} description={post.excerpt} footerCta={false}>
+  <div class="post">
+    <nav class="crumbs" aria-label={copy.breadcrumbLabel}>
+      <ol role="list">
+        <li>
+          <a href={routes.news}>{news.meta.title}</a>
+        </li>
+        <li aria-current="page">{post.title}</li>
+      </ol>
+    </nav>
+
+    <header class="frame">
+      <Ornament name="nouveau-top" class="top wide" />
+      <Ornament name="nouveau-top-small" class="top narrow" />
+      <Ornament name="nouveau-stem" class="stem wide" />
+      <Ornament name="nouveau-stem-slim" class="stem narrow" />
+      <div class="heading">
+        <p class="category">{categories[post.category].label}</p>
+        <h1 class:list={["title", { long }]}>{post.title}</h1>
+        <p class="date">
+          <time datetime={post.date}>{date.long}</time>
+        </p>
+        {place && <p class="place">{place}</p>}
+      </div>
+      <Ornament name="nouveau-stem" class="stem stem-end wide" />
+      <Ornament name="nouveau-stem-slim" class="stem stem-end narrow" />
+      <Ornament name="nouveau-base" class="base wide" />
+      <Ornament name="nouveau-base-small" class="base narrow" />
+    </header>
+
+    {post.cover && (
+      <div class="cover">
+        <Photo
+          image={post.cover}
+          sizes="(width < 760px) calc(100vw - 2.5rem), min(68.75rem, 100vw)"
+        />
+      </div>
+    )}
+
+    <article class="article">
+      {SHOW_PLACEHOLDER_TAGS && copy.placeholder && (
+        <p class="tag-row">
+          <span class="placeholder-tag">{site.placeholderTag}</span>
+        </p>
+      )}
+      <PostBody post={post} />
+    </article>
+
+    <p class="back">
+      <a href={routes.news}>
+        <span aria-hidden="true">←</span>
+        {copy.back}
+      </a>
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .post {
+    padding: var(--space-l) var(--space-gutter) var(--space-7xl);
+  }
+
+  .crumbs,
+  .back {
+    max-width: var(--width-post);
+    margin-inline: auto;
+  }
+
+  /* Breadcrumb ------------------------------------------------------------- */
+  .crumbs ol {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    padding: 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-small);
+    list-style: none;
+  }
+
+  .crumbs li {
+    display: flex;
+    gap: var(--space-2xs);
+    min-width: 0;
+  }
+
+  .crumbs li:first-child {
+    flex: none;
+  }
+
+  .crumbs li + li::before {
+    content: "/";
+    content: "/" / "";
+  }
+
+  .crumbs [aria-current] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .crumbs a {
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: var(--space-3xs);
+  }
+
+  /* Title frame: fixed top and base, stems that stretch with the title ----- */
+  .frame {
+    display: grid;
+    grid-template-columns: 20% minmax(0, 1fr) 20%;
+    max-width: var(--width-post);
+    margin: var(--space-xl) auto 0;
+    color: var(--color-ink-red);
+  }
+
+  .frame :global(svg) {
+    width: 100%;
+  }
+
+  .frame :global(.top) {
+    grid-column: 1 / -1;
+    height: auto;
+  }
+
+  .frame :global(.base) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    height: auto;
+  }
+
+  /* Stems take the height of the title row without adding to it. */
+  .frame :global(.stem) {
+    grid-column: 1;
+    grid-row: 2;
+    height: 0;
+    min-height: 100%;
+  }
+
+  .frame :global(.stem-end) {
+    grid-column: 3;
+    transform: scaleX(-1);
+  }
+
+  .frame :global(.narrow) {
+    display: none;
+  }
+
+  .heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-column: 2;
+    grid-row: 2;
+    padding: var(--space-2xs) var(--space-l) var(--space-2xl);
+    color: var(--color-ink);
+    text-align: center;
+  }
+
+  .category {
+    color: var(--color-ink-red);
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+  }
+
+  .title {
+    margin-top: var(--space-xs);
+    font-size: var(--text-post-title);
+    line-height: var(--leading-hero);
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .title.long {
+    font-size: var(--text-post-title-long);
+  }
+
+  .date {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    margin-top: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .date::before,
+  .date::after {
+    content: "";
+    width: var(--space-l);
+    height: var(--rule-hair);
+    background: var(--color-ink-red);
+  }
+
+  .place {
+    margin-top: var(--space-2xs);
+    color: var(--color-ink-muted);
+    font-size: var(--text-body-l);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* Cover: a double-ruled frame ---------------------------------------------- */
+  .cover {
+    max-width: var(--width-post);
+    margin: var(--space-3xl) auto 0;
+    padding: var(--space-xs);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    box-shadow: var(--frame-inner);
+  }
+
+  /* Body ------------------------------------------------------------------- */
+  .article {
+    max-width: var(--width-article);
+    margin: var(--space-post) auto 0;
+  }
+
+  .frame + .article {
+    margin-top: var(--space-4xl);
+  }
+
+  .tag-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--space-xs);
+  }
+
+  /* The way back: a quiet text link ------------------------------------------ */
+  .back {
+    display: flex;
+    margin-top: var(--space-3xl);
+  }
+
+  .back a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: var(--size-touch);
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: var(--space-3xs);
+  }
+
+  .back a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .back span {
+    display: inline-block;
+  }
+
+  @media (width < 760px) {
+    .post {
+      padding-top: var(--space-xs);
+    }
+
+    .frame {
+      grid-template-columns: 10.3% minmax(0, 1fr) 10.3%;
+      max-width: 30rem;
+      margin-top: var(--space-m);
+    }
+
+    .frame :global(.wide) {
+      display: none;
+    }
+
+    .frame :global(.narrow) {
+      display: block;
+    }
+
+    .heading {
+      padding: var(--space-3xs) var(--space-2xs) var(--space-m);
+    }
+
+    .title {
+      margin-top: var(--space-2xs);
+    }
+
+    .date {
+      margin-top: var(--space-s);
+      gap: var(--space-xs);
+    }
+
+    .date::before,
+    .date::after {
+      width: var(--space-s);
+    }
+
+    .cover {
+      margin-top: var(--space-xl);
+      padding: var(--space-2xs);
+    }
+
+    .article,
+    .frame + .article {
+      margin-top: var(--space-2xl);
+    }
+
+    .back {
+      margin-top: var(--space-xl);
+    }
+  }
+</style>

@@ -66,4 +66,12 @@ export const news = {
     andBefore: "και πριν",
     empty: "Δεν υπάρχουν ακόμα δημοσιεύσεις σε αυτή την κατηγορία.",
   },
+
+  /** A post page (/nea/<slug>). */
+  post: {
+    /** The sample posts in src/content/news are placeholders. */
+    placeholder: true,
+    breadcrumbLabel: "Διαδρομή",
+    back: "Πίσω στο χρονικό",
+  },
 };
