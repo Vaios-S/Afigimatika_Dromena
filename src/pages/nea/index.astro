@@ -1,0 +1,14 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { news } from "../../data/news";
+import { getUpcomingEvents } from "../../lib/news";
+import EventsBoard from "../../sections/news/EventsBoard.astro";
+import Intro from "../../sections/news/Intro.astro";
+
+const events = await getUpcomingEvents();
+---
+
+<BaseLayout title={news.meta.title} description={news.meta.description}>
+  <Intro />
+  <EventsBoard events={events} />
+</BaseLayout>

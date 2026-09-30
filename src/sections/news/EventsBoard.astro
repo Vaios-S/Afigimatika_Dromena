@@ -1,0 +1,365 @@
+---
+/**
+ * Upcoming events as printed announcements pinned on a paper board, each
+ * slightly tilted and set at its own height. Which events are "upcoming" is
+ * decided at build time (see getUpcomingEvents in src/lib/news.ts).
+ * With no upcoming events, one announcement invites people to invite us.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { news } from "../../data/news";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import { dateParts, type NewsEvent } from "../../lib/news";
+
+interface Props {
+  events: NewsEvent[];
+}
+
+const { events } = Astro.props;
+const copy = news.events;
+
+/** Each announcement's lean, drop and foot ornament (with its box), repeating. */
+const looks = [
+  { tilt: -1, drop: 0, ornament: "flower", footW: "1.75rem", footH: "1.75rem" },
+  {
+    tilt: 0.71,
+    drop: 1,
+    ornament: "oak-leaf",
+    footW: "2.5rem",
+    footH: "1.3125rem",
+  },
+  {
+    tilt: -0.43,
+    drop: 0.4,
+    ornament: "crest",
+    footW: "7.5rem",
+    footH: "1.625rem",
+  },
+];
+---
+
+<section class="board" aria-labelledby="board-title">
+  <div class="inner">
+    <div class="head">
+      <div>
+        <p class="label kicker">{copy.label}</p>
+        <h2 id="board-title" class="title">
+          {copy.title}
+        </h2>
+      </div>
+      {SHOW_PLACEHOLDER_TAGS && copy.placeholder && (
+        <span class="placeholder-tag">{site.placeholderTag}</span>
+      )}
+    </div>
+
+    {events.length ? (
+      <ul class="posters" role="list">
+        {events.map((event, i) => {
+          const look = looks[i % looks.length];
+          const date = dateParts(event.date);
+          const titleId = `event-${event.id}`;
+          return (
+            <li
+              class="poster"
+              style={`--tilt: ${look.tilt}; --drop: ${look.drop}; --foot-w: ${look.footW}; --foot-h: ${look.footH}`}
+            >
+              <article aria-labelledby={titleId}>
+                <span class="pin" aria-hidden="true" />
+                <p class="when">
+                  <time
+                    datetime={
+                      event.time ? `${event.date}T${event.time}` : event.date
+                    }
+                  >
+                    <span class="weekday">{date.weekday}</span>
+                    <span class="day">{date.day}</span>
+                    <span class="month">{date.month}</span>
+                  </time>
+                  <span class="time">
+                    {event.time
+                      ? `${copy.timePrefix} ${event.time}`
+                      : copy.timeTbd}
+                  </span>
+                </p>
+                <span class="rule" aria-hidden="true" />
+                <h3 id={titleId} class="event-title">
+                  {event.title}
+                </h3>
+                <p class="where">
+                  {event.venue}
+                  <br />
+                  <span class="city">{event.city}</span>
+                </p>
+                <p class="audience">{event.audience}</p>
+                {event.link && (
+                  <a href={event.link} class="details">
+                    {copy.details}
+                    <span class="visually-hidden">: {event.title}</span>
+                  </a>
+                )}
+                <Ornament name={look.ornament} class="foot" />
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+    ) : (
+      <div class="poster empty" style="--tilt: -0.57; --drop: 0">
+        <span class="pin" aria-hidden="true" />
+        <Ornament name="flower" class="empty-flower" />
+        <p class="empty-text">{copy.empty.text}</p>
+        <a href={copy.empty.action.href} class="details">
+          {copy.empty.action.label}
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  /* The board: shaded paper band with a double rule top and bottom. */
+  .board {
+    padding: var(--space-6xl) var(--space-gutter)
+      calc(var(--space-6xl) + var(--space-s));
+    border-block: var(--rule-thin) solid var(--color-ink-red);
+    background: var(--color-paper-shade) var(--texture-grain);
+    box-shadow:
+      inset 0 var(--space-3xs) 0 var(--color-paper-shade),
+      inset 0 calc(var(--space-3xs) + var(--rule-hair)) 0 var(--color-ink-red),
+      inset 0 calc(-1 * var(--space-3xs)) 0 var(--color-paper-shade),
+      inset 0 calc(-1 * (var(--space-3xs) + var(--rule-hair))) 0
+        var(--color-ink-red);
+  }
+
+  .inner {
+    max-width: var(--width-content);
+    margin-inline: auto;
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-s) var(--space-xl);
+    margin-bottom: var(--space-4xl);
+  }
+
+  .kicker {
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    margin-top: var(--space-xs);
+    font-size: var(--text-cta);
+    line-height: 1.05;
+  }
+
+  /* Announcements --------------------------------------------------------------- */
+  .posters {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-3xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .poster {
+    position: relative;
+    margin-top: calc(var(--drop) * var(--space-4xl));
+    padding: calc(var(--space-2xl) + var(--space-3xs)) var(--space-xl)
+      calc(var(--space-xl) + var(--space-3xs));
+    border: var(--rule-thin) solid var(--color-ink-red);
+    background: var(--color-paper) var(--texture-grain);
+    box-shadow:
+      inset 0 0 0 var(--frame-gap) var(--color-paper),
+      inset 0 0 0 calc(var(--frame-gap) + var(--rule-hair)) var(--color-ink-red),
+      var(--poster-shadow);
+    transform: rotate(calc(var(--tilt) * var(--poster-tilt)));
+  }
+
+  .poster article {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .pin {
+    position: absolute;
+    top: calc(var(--poster-pin) / -2);
+    left: 50%;
+    width: var(--poster-pin);
+    height: var(--poster-pin);
+    border-radius: 50%;
+    background: var(--color-ink-red);
+    box-shadow: inset -3px -3px 0 var(--color-oxblood);
+    transform: translateX(-50%);
+  }
+
+  .when time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .weekday,
+  .month {
+    font-family: var(--font-display);
+    font-weight: var(--weight-medium);
+    text-transform: uppercase;
+    color: var(--color-ink-red);
+  }
+
+  .weekday {
+    font-size: var(--text-label);
+    letter-spacing: 0.2em;
+  }
+
+  .day {
+    margin-top: var(--space-2xs);
+    font-family: var(--font-display);
+    font-size: var(--text-poster-day);
+    font-variant-numeric: oldstyle-nums;
+    line-height: 0.9;
+  }
+
+  .month {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-poster-month);
+    letter-spacing: 0.24em;
+  }
+
+  .time {
+    display: block;
+    margin-top: var(--space-2xs);
+    font-style: italic;
+    color: var(--color-ink-muted);
+  }
+
+  .rule {
+    width: var(--space-3xl);
+    height: var(--rule-thin);
+    margin-block: var(--space-m);
+    background: var(--color-ink-red);
+  }
+
+  .event-title {
+    font-size: var(--text-title);
+    font-style: italic;
+    line-height: 1.12;
+  }
+
+  .where {
+    margin-top: var(--space-xs);
+    line-height: 1.5;
+  }
+
+  .city {
+    color: var(--color-ink-muted);
+  }
+
+  .audience {
+    margin-top: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  .details {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-touch);
+    margin-top: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: 6px;
+  }
+
+  /* --foot-w / --foot-h: the box of the ornament at the foot. */
+  .poster :global(.foot) {
+    width: var(--foot-w);
+    height: var(--foot-h);
+    margin-top: var(--space-2xs);
+    color: var(--color-ink-red);
+  }
+
+  /* Empty state: one announcement inviting people to invite us. */
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 38.75rem;
+    margin-inline: auto;
+    padding: var(--space-3xl) var(--space-3xl) var(--space-2xl);
+    text-align: center;
+  }
+
+  .empty :global(.empty-flower) {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--color-ink-red);
+  }
+
+  .empty-text {
+    margin-top: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--text-quote);
+    font-style: italic;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+
+  /* Tablet: two columns, less drop. */
+  @media (width < 1100px) {
+    .posters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .poster {
+      margin-top: calc(var(--drop) * var(--space-xl));
+    }
+  }
+
+  /* Phones: one column, gentler lean, no drop. */
+  @media (width < 760px) {
+    .board {
+      padding-block: var(--space-3xl) var(--space-5xl);
+    }
+
+    .head {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: var(--space-2xl);
+    }
+
+    .title {
+      margin-top: var(--space-2xs);
+    }
+
+    .posters {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-2xl);
+    }
+
+    .poster {
+      margin-top: 0;
+      padding: calc(var(--space-xl) + var(--space-3xs)) var(--space-m)
+        var(--space-l);
+      transform: rotate(calc(var(--tilt) * var(--poster-tilt) * 0.6));
+    }
+
+    .rule {
+      margin-block: var(--space-s);
+    }
+
+    .empty {
+      padding: var(--space-2xl) var(--space-m) var(--space-l);
+    }
+  }
+</style>

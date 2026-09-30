@@ -10,7 +10,13 @@ import Button from "./Button.astro";
 import Ornament from "./Ornament.astro";
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
-const current = (href: string) => (path === href ? "page" : undefined);
+/** "page" on the page itself; "true" on pages below it (a post under /nea). */
+const current = (href: string) =>
+  path === href
+    ? "page"
+    : href !== "/" && path.startsWith(`${href}/`)
+      ? "true"
+      : undefined;
 ---
 
 <header class="header">
@@ -92,11 +98,11 @@ const current = (href: string) => (path === href ? "page" : undefined);
   }
 
   .nav-link:hover,
-  .nav-link[aria-current="page"] {
+  .nav-link[aria-current] {
     color: var(--color-ink-red);
   }
 
-  .nav-link[aria-current="page"] {
+  .nav-link[aria-current] {
     text-decoration: underline;
     text-decoration-thickness: var(--rule-thin);
     text-underline-offset: var(--space-2xs);

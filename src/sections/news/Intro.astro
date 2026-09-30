@@ -1,0 +1,123 @@
+---
+/**
+ * Intro for /nea: label, title and text, with the large line dragon beside
+ * them. Phones: the small dragon sits beside the label, above the title.
+ */
+import Ornament from "../../components/Ornament.astro";
+import { news } from "../../data/news";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+
+const { intro } = news;
+---
+
+<section class="intro" aria-labelledby="intro-title">
+  <div class="text-block">
+    <div class="head">
+      <div class="labels">
+        <p class="label kicker">{intro.label}</p>
+        {SHOW_PLACEHOLDER_TAGS && intro.placeholder && (
+          <span class="placeholder-tag">{site.placeholderTag}</span>
+        )}
+      </div>
+      <Ornament name="dragon-corner-small" class="dragon-small" />
+    </div>
+    <h1 id="intro-title" class="title">
+      {intro.title.text} <em>{intro.title.accent}</em>
+    </h1>
+    <p class="text">{intro.text}</p>
+  </div>
+  <Ornament name="dragon-corner" class="dragon" />
+</section>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(35rem, 42%);
+    align-items: center;
+    gap: var(--space-3xl);
+    max-width: var(--width-page);
+    margin-inline: auto;
+    padding: var(--space-2xl) var(--space-frame) var(--space-5xl)
+      var(--space-gutter);
+  }
+
+  .labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .kicker {
+    font-size: var(--text-kicker);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    margin-top: var(--space-m);
+    font-size: var(--text-page-title);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .text {
+    max-width: 37.5rem;
+    margin-top: var(--space-xl);
+    font-size: var(--text-lead);
+  }
+
+  /* The dragon keeps its 560:480 box and scales with it. */
+  .intro :global(.dragon) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 560 / 480;
+    color: var(--color-ink-red);
+  }
+
+  .head :global(.dragon-small) {
+    display: none;
+  }
+
+  @media (width < 760px) {
+    .intro {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding: var(--space-m) var(--space-gutter) var(--space-3xl);
+    }
+
+    .intro :global(.dragon) {
+      display: none;
+    }
+
+    .head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 10.625rem;
+      align-items: end;
+      gap: var(--space-2xs);
+    }
+
+    .labels {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-xs);
+      padding-bottom: var(--space-s);
+    }
+
+    .head :global(.dragon-small) {
+      display: block;
+      width: 10.625rem;
+      height: auto;
+      aspect-ratio: 560 / 480;
+      color: var(--color-ink-red);
+    }
+
+    .title {
+      margin-top: var(--space-s);
+      line-height: 1.02;
+    }
+
+    .text {
+      margin-top: var(--space-s);
+    }
+  }
+</style>

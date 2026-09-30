@@ -73,6 +73,16 @@
     1.5rem
   ); /* 21 → 24, text typed in blanks */
   --text-caption-sm: 0.84375rem; /* 13.5, captions under blanks */
+  --text-poster-day: clamp(
+    5.5rem,
+    4.943rem + 2.286vw,
+    7rem
+  ); /* 88 → 112, event day number */
+  --text-poster-month: clamp(
+    0.9375rem,
+    0.891rem + 0.19vw,
+    1.0625rem
+  ); /* 15 → 17, event month */
   --text-list-title: clamp(
     1.75rem,
     1.518rem + 0.952vw,
@@ -224,6 +234,14 @@
   --letter-leading: 3; /* line height of sentences with inline blanks (room for captions) */
   --letter-ruled-line: 3rem; /* 48, textarea line spacing (40 on phones) */
   --blank-rule: 1.5px; /* line under each blank */
+
+  /* ------------------------------------------------------------------------
+     News board (/nea): announcements pinned on paper
+     ------------------------------------------------------------------------ */
+  --poster-shadow: 0 10px 18px -12px
+    color-mix(in srgb, var(--color-ink) 35%, transparent);
+  --poster-pin: 18px;
+  --poster-tilt: 1.4deg; /* the most any announcement leans */
 
   /* ------------------------------------------------------------------------
      Motion
