@@ -157,10 +157,26 @@ Adding an event: add an entry to `src/content/events.json` with a unique `id` (l
 - The post body is rendered in one place only: `src/components/news/PostBody.astro`, through `loadPostBody()`.
 - "Upcoming" events are those dated today or later in Athens time, decided **at build time**. The site therefore needs a daily rebuild (see the pre-launch checklist); without it a past event would stay on the board until the next deploy.
 
+### URLs
+
+All listing pages are real static pages, so the filter and the pagination work without JavaScript and can be crawled:
+
+```
+/nea                                  all posts, page 1, with the intro and the events board
+/nea/selida/2                         all posts, page 2 …
+/nea/kategoria/nea                    Νέα
+/nea/kategoria/apo-tis-afigiseis-mas  Από τις αφηγήσεις μας
+/nea/kategoria/ston-typo              Στον Τύπο
+/nea/kategoria/<category>/selida/2    …
+/nea/<slug>                           a post
+```
+
+`src/pages/nea/index.astro` builds `/nea`; `src/pages/nea/[...listing].astro` builds every other listing page from `getListingPaths()`. The events board appears only on `/nea`. Page size: `POSTS_PER_PAGE` in `src/data/news.ts`.
+
 ### Switching to Sanity
 
 1. Create the Sanity schema with the same fields as above (post, image with alt and caption, event).
-2. In `src/lib/news.ts`, reimplement the functions marked SOURCE (`loadPosts`, `loadEvents`, `loadPostBody`) with Sanity queries that return the same `Post` and `NewsEvent` objects. Images become Sanity CDN URLs with `width` and `height` in `NewsImage`.
+2. In `src/lib/news.ts`, reimplement the functions marked SOURCE (`loadPosts`, `loadEvents`, `loadPostBody`) with Sanity queries that return the same `Post` and `NewsEvent` objects. Images become Sanity CDN URLs with `width` and `height` in `NewsImage`. `Photo.astro` already renders a remote URL (it needs `width` and `height`); add `cdn.sanity.io` to `image.domains` in `astro.config.mjs` so Astro optimizes those images.
 3. In `PostBody.astro`, render Portable Text instead of the Markdown content.
 4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`.
 5. Pages and the other components stay as they are.

@@ -1,14 +1,17 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { news } from "../../data/news";
-import { getUpcomingEvents } from "../../lib/news";
+import { getListingPage, getUpcomingEvents } from "../../lib/news";
+import Chronicle from "../../sections/news/Chronicle.astro";
 import EventsBoard from "../../sections/news/EventsBoard.astro";
 import Intro from "../../sections/news/Intro.astro";
 
 const events = await getUpcomingEvents();
+const listing = await getListingPage(undefined, 1);
 ---
 
 <BaseLayout title={news.meta.title} description={news.meta.description}>
   <Intro />
   <EventsBoard events={events} />
+  <Chronicle listing={listing} />
 </BaseLayout>

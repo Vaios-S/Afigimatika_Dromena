@@ -1,0 +1,515 @@
+---
+/**
+ * The chronicle: posts grouped by year, with the category filter and the
+ * page links. Everything is a plain link to a static page (/nea,
+ * /nea/selida/2, /nea/kategoria/<path>), so it works without JavaScript and
+ * can be crawled.
+ */
+import Ornament from "../../components/Ornament.astro";
+import Photo from "../../components/Photo.astro";
+import { categories, news } from "../../data/news";
+import {
+  dateParts,
+  groupByYear,
+  listingUrl,
+  type Category,
+  type ListingPage,
+} from "../../lib/news";
+
+interface Props {
+  listing: ListingPage;
+}
+
+const { listing } = Astro.props;
+const copy = news.chronicle;
+const groups = groupByYear(listing.posts);
+const filters: { label: string; category?: Category }[] = [
+  { label: copy.all },
+  ...(Object.keys(categories) as Category[]).map((category) => ({
+    label: categories[category].label,
+    category,
+  })),
+];
+const older = listing.older;
+const olderYears = older
+  ? older.firstYear === older.lastYear
+    ? String(older.firstYear)
+    : `${older.firstYear} ${copy.andBefore}`
+  : "";
+---
+
+<section class="chronicle" aria-labelledby="chronicle-title">
+  <div class="inner">
+    <div class="head">
+      <div>
+        <p class="label kicker">{copy.label}</p>
+        <h2 id="chronicle-title" class="title">
+          {copy.title}
+        </h2>
+      </div>
+      <nav class="filters" aria-label={copy.filterLabel}>
+        <ul role="list">
+          {filters.map((filter) => (
+            <li>
+              <a
+                href={listingUrl(filter.category)}
+                class="filter"
+                aria-current={
+                  filter.category === listing.category
+                    ? listing.page === 1
+                      ? "page"
+                      : "true"
+                    : undefined
+                }
+              >
+                {filter.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    {listing.posts.length === 0 && <p class="empty">{copy.empty}</p>}
+
+    {groups.map((group) => (
+      <section class="year" aria-labelledby={`year-${group.year}`}>
+        <div class="year-head">
+          <h3 id={`year-${group.year}`} class="year-number">
+            {group.year}
+          </h3>
+          <div class="year-rule" aria-hidden="true">
+            <Ornament name="crest" class="crest" />
+          </div>
+        </div>
+        <ul class="entries" role="list">
+          {group.posts.map((post, i) => {
+            const date = dateParts(post.date);
+            return (
+              <li>
+                <article class:list={["entry", { "has-thumb": post.cover }]}>
+                  <time class="date" datetime={post.date}>
+                    <span class="day">{date.day}</span>
+                    <span class="month">{date.monthShort}</span>
+                    <span class="visually-hidden">{date.year}</span>
+                  </time>
+                  <div class="body">
+                    <p class="category">{categories[post.category].label}</p>
+                    <h4 class="entry-title">
+                      <a href={post.url}>{post.title}</a>
+                    </h4>
+                    <p class="excerpt">{post.excerpt}</p>
+                  </div>
+                  {post.cover && (
+                    <div class="thumb" style={`--lean: ${i % 2 ? 1 : -1}`}>
+                      <Photo
+                        image={post.cover}
+                        ratio="4 / 3"
+                        compact
+                        sizes="(width < 760px) 15rem, 12.5rem"
+                      />
+                    </div>
+                  )}
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ))}
+
+    {(listing.newerUrl || older) && (
+      <nav class="pages" aria-label={copy.pagesLabel}>
+        {listing.newerUrl && (
+          <a href={listing.newerUrl} class="newer">
+            <span aria-hidden="true">←</span> {copy.newer}
+          </a>
+        )}
+        {older && (
+          <a href={older.url} class="older">
+            <span class="fold" aria-hidden="true" />
+            <span class="older-kicker">
+              {copy.older.kicker}
+              <svg viewBox="0 0 40 14" aria-hidden="true">
+                <path d="M0 7h34M28 2l7 5-7 5" />
+              </svg>
+            </span>
+            <span class="older-label">{copy.older.label}</span>
+            <span class="older-years">{olderYears}</span>
+          </a>
+        )}
+      </nav>
+    )}
+  </div>
+</section>
+
+<style>
+  .chronicle {
+    padding: var(--space-section) var(--space-gutter) var(--space-7xl);
+  }
+
+  .inner {
+    max-width: var(--width-content);
+    margin-inline: auto;
+  }
+
+  /* Heading and filter ----------------------------------------------------------- */
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-l) var(--space-2xl);
+  }
+
+  .kicker {
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .title {
+    margin-top: var(--space-xs);
+    font-size: var(--text-cta);
+    line-height: 1.05;
+  }
+
+  .filters ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-xs);
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Tag with a double rule; the active one is solid red. */
+  .filter {
+    --tag-bg: var(--color-paper);
+    --tag-ring: var(--color-ink-red);
+
+    display: flex;
+    align-items: center;
+    min-height: var(--size-touch);
+    padding: 0 var(--space-m);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    background: var(--tag-bg);
+    box-shadow:
+      inset 0 0 0 2.5px var(--tag-bg),
+      inset 0 0 0 3.5px var(--tag-ring);
+    color: var(--color-ink-red);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .filter:hover {
+    --tag-bg: var(--color-paper-shade);
+  }
+
+  .filter[aria-current] {
+    --tag-bg: var(--color-ink-red);
+    --tag-ring: var(--color-paper);
+
+    color: var(--color-paper);
+  }
+
+  .empty {
+    margin-top: var(--space-5xl);
+    font-family: var(--font-display);
+    font-size: var(--text-entry);
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Year groups ------------------------------------------------------------------ */
+  .year-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: calc(var(--space-6xl) + var(--space-2xs)) 0 var(--space-l);
+  }
+
+  .year-number {
+    font-size: var(--text-year);
+    font-variant-numeric: oldstyle-nums;
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+  }
+
+  .year-rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    width: 100%;
+    margin-top: var(--space-s);
+    color: var(--color-ink-red);
+  }
+
+  .year-rule::before,
+  .year-rule::after {
+    content: "";
+    flex: 1;
+    height: var(--rule-hair);
+    background: currentColor;
+  }
+
+  .year-rule :global(.crest) {
+    flex: none;
+    width: 15rem;
+    height: auto;
+  }
+
+  .entries {
+    padding: 0;
+    border-top: var(--rule-thin) solid var(--color-ink-red);
+    list-style: none;
+  }
+
+  /* Entry: date in the margin, text, optional tilted thumbnail. */
+  .entry {
+    display: grid;
+    grid-template-columns: 6.875rem minmax(0, 1fr) 12.5rem;
+    align-items: start;
+    gap: 0 var(--space-2xl);
+    padding-block: calc(var(--space-xl) + var(--space-2xs));
+    border-bottom: var(--rule-hair) solid var(--color-rule-soft);
+  }
+
+  .entry:not(.has-thumb) .body {
+    grid-column: 2 / 4;
+  }
+
+  .date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--space-3xs);
+  }
+
+  .day {
+    font-family: var(--font-display);
+    font-size: var(--text-entry-day);
+    font-variant-numeric: oldstyle-nums;
+    line-height: 0.9;
+  }
+
+  .month {
+    margin-top: var(--space-2xs);
+    font-family: var(--font-display);
+    font-size: var(--text-caption-sm);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-ink-red);
+  }
+
+  .category {
+    font-family: var(--font-display);
+    font-size: var(--text-name);
+    font-style: italic;
+    color: var(--color-ink-red);
+  }
+
+  .entry-title {
+    margin-top: var(--space-2xs);
+    font-size: var(--text-entry-title);
+    line-height: 1.16;
+    text-wrap: pretty;
+  }
+
+  .entry-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .entry-title a:hover {
+    color: var(--color-ink-red);
+  }
+
+  .excerpt {
+    max-width: 40rem;
+    margin-top: var(--space-2xs);
+    font-size: var(--text-body-l);
+  }
+
+  .thumb {
+    padding: var(--frame-gap);
+    border: var(--rule-hair) solid var(--color-ink-red);
+    transform: rotate(calc(var(--lean) * 1.2deg));
+  }
+
+  /* Page links ---------------------------------------------------------------- */
+  .pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-l);
+    margin-top: var(--space-5xl);
+  }
+
+  .newer {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: var(--size-touch);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    text-underline-offset: 6px;
+  }
+
+  /* "Turn the page": a boxed card with a folded corner, as in the design. */
+  .older {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2xs);
+    margin-left: auto;
+    padding: calc(var(--space-xl) - var(--space-3xs))
+      calc(var(--space-6xl) + var(--space-s)) var(--space-xl) var(--space-3xl);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    box-shadow:
+      inset 0 0 0 var(--frame-gap) var(--color-paper),
+      inset 0 0 0 calc(var(--frame-gap) + var(--rule-hair)) var(--color-ink-red);
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .older:hover {
+    background: var(--color-paper-shade);
+  }
+
+  .fold {
+    position: absolute;
+    right: calc(-1 * var(--rule-thin));
+    bottom: calc(-1 * var(--rule-thin));
+    width: var(--space-3xl);
+    height: var(--space-3xl);
+    border-top: var(--rule-thin) solid var(--color-ink-red);
+    border-left: var(--rule-thin) solid var(--color-ink-red);
+    background: linear-gradient(
+      to top left,
+      var(--color-paper) 0 50%,
+      var(--color-rule-soft) 50% 100%
+    );
+    box-shadow: -3px -3px 0 var(--color-paper);
+  }
+
+  .older-kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-button);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-ink-red);
+  }
+
+  .older-kicker svg {
+    width: 2.5rem;
+    height: 0.875rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.4;
+  }
+
+  .older-label {
+    font-family: var(--font-display);
+    font-size: var(--text-list-title);
+    font-style: italic;
+    line-height: 1.1;
+  }
+
+  .older-years {
+    font-style: italic;
+    color: var(--color-ink-muted);
+  }
+
+  /* Tablet: the heading and the filter stack. */
+  @media (width < 1100px) {
+    .head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filters ul {
+      justify-content: flex-start;
+    }
+  }
+
+  /* Phones: filter as a sideways strip, thumbnail under the text. */
+  @media (width < 760px) {
+    .chronicle {
+      padding-block: var(--space-5xl) var(--space-4xl);
+    }
+
+    .title {
+      margin-top: var(--space-2xs);
+    }
+
+    .filters {
+      align-self: stretch;
+      margin-inline: calc(-1 * var(--space-gutter));
+      overflow-x: auto;
+    }
+
+    .filters ul {
+      flex-wrap: nowrap;
+      gap: var(--space-2xs);
+      padding: var(--space-3xs) var(--space-gutter) var(--space-2xs);
+    }
+
+    .filter {
+      padding: 0 var(--space-xs);
+    }
+
+    .year-head {
+      margin: var(--space-3xl) 0 var(--space-m);
+    }
+
+    .year-rule :global(.crest) {
+      width: 10rem;
+    }
+
+    .entry {
+      grid-template-columns: 3.375rem minmax(0, 1fr);
+      gap: 0 var(--space-s);
+      padding-block: calc(var(--space-m) + var(--space-3xs));
+    }
+
+    .entry:not(.has-thumb) .body {
+      grid-column: 2;
+    }
+
+    .thumb {
+      grid-column: 2;
+      max-width: 15rem;
+      margin-top: var(--space-s);
+      padding: var(--space-3xs);
+      transform: none;
+    }
+
+    .thumb :global(.photo) {
+      aspect-ratio: 3 / 2;
+    }
+
+    .category,
+    .excerpt {
+      font-size: var(--text-body);
+    }
+
+    .older {
+      padding: var(--space-l) var(--space-6xl) var(--space-l) var(--space-xl);
+    }
+  }
+</style>

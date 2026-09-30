@@ -73,6 +73,21 @@
     1.5rem
   ); /* 21 → 24, text typed in blanks */
   --text-caption-sm: 0.84375rem; /* 13.5, captions under blanks */
+  --text-year: clamp(
+    5rem,
+    3.514rem + 6.095vw,
+    8.75rem
+  ); /* 80 → 140, chronicle year */
+  --text-entry-day: clamp(
+    2.375rem,
+    2.05rem + 1.333vw,
+    3.25rem
+  ); /* 38 → 52, chronicle date */
+  --text-entry-title: clamp(
+    1.4375rem,
+    1.229rem + 0.857vw,
+    2rem
+  ); /* 23 → 32, chronicle titles */
   --text-poster-day: clamp(
     5.5rem,
     4.943rem + 2.286vw,

@@ -56,6 +56,7 @@ export const news = {
     label: "Το χρονικό μας",
     title: "Ό,τι γράψαμε στο τετράδιο",
     filterLabel: "Φίλτρο κατηγορίας",
+    pagesLabel: "Σελίδες του χρονικού",
     all: "Όλα",
     /** Card to the next (older) page. */
     older: { kicker: "Γυρίστε τη σελίδα", label: "Παλαιότερα" },

@@ -1,0 +1,48 @@
+---
+/**
+ * The other listing pages: /nea/selida/<n>, /nea/kategoria/<path> and
+ * /nea/kategoria/<path>/selida/<n>. Page 1 of "all" is /nea (index.astro).
+ */
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { categories, news } from "../../data/news";
+import {
+  getListingPage,
+  getListingPaths,
+  listingUrl,
+  type Category,
+} from "../../lib/news";
+import Chronicle from "../../sections/news/Chronicle.astro";
+import Intro from "../../sections/news/Intro.astro";
+
+export const getStaticPaths = (async () => {
+  const paths = await getListingPaths();
+  return paths
+    .filter((path) => path.category || path.page > 1)
+    .map(({ category, page }) => ({
+      params: { listing: listingUrl(category, page).replace("/nea/", "") },
+      props: { category, page },
+    }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  category?: Category;
+  page: number;
+}
+
+const { category, page } = Astro.props;
+const listing = await getListingPage(category, page);
+
+const base = category
+  ? news.meta.categoryTitle.replace("{category}", categories[category].label)
+  : news.meta.title;
+const title =
+  page > 1
+    ? `${base}, ${news.meta.pageTitle.replace("{page}", String(page))}`
+    : base;
+---
+
+<BaseLayout title={title} description={news.meta.description}>
+  <Intro />
+  <Chronicle listing={listing} />
+</BaseLayout>
