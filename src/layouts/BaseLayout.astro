@@ -17,6 +17,8 @@ interface Props {
   article?: { published: string; section: string };
   /** This page's own structured data (Article, Event…), next to the group's. */
   structuredData?: Record<string, unknown>[];
+  /** Never indexed, even after launch (the 404 page). */
+  noindex?: boolean;
 }
 
 const {
@@ -25,6 +27,7 @@ const {
   footerCta = true,
   article,
   structuredData = [],
+  noindex = false,
 } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : site.name;
 
@@ -50,7 +53,9 @@ const jsonLdScript = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {!LAUNCHED && <meta name="robots" content="noindex, nofollow" />}
+    {(!LAUNCHED || noindex) && (
+      <meta name="robots" content="noindex, nofollow" />
+    )}
     {LAUNCHED && <link rel="sitemap" href="/sitemap-index.xml" />}
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

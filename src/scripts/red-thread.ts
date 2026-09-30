@@ -19,8 +19,18 @@
  * src/styles/tokens.css (the "Red thread" block).
  */
 
+import {
+  catmullRom,
+  drawThread,
+  FIBRE_WIDTH,
+  round,
+  TICK_WIDTH,
+  type Point,
+} from "../lib/thread";
+
 /* ==========================================================================
    Tunables: adjust the feel here without touching the algorithm.
+   The thread's texture (wobble, twist ticks, fibres) is in src/lib/thread.ts.
    ========================================================================== */
 
 /** Where the thread's tip sits, as a fraction of the viewport height (0 = top). */
@@ -28,25 +38,6 @@ const TIP = 0.62;
 
 /** Verse lines appear once the intro's top passes this fraction of the viewport. */
 const VERSE_TRIGGER = 0.85;
-
-/** Hand-drawn wobble: sine waves summed along the thread (px, px, radians). */
-const WOBBLE = [
-  { amplitude: 1.3, wavelength: 61, phase: 0.7 },
-  { amplitude: 0.7, wavelength: 23, phase: 2.1 },
-];
-/** Distance from the yarn ball over which the wobble fades in (px). */
-const WOBBLE_RAMP = 36;
-
-/** Twist ticks across the thread. */
-const TICK_SPACING = 6; // px along the thread
-const TICK_HALF_WIDTH = 2.1; // px each side of the centre line
-const TICK_SLANT = 1.5; // px the tick leans along the thread
-const TICK_WIDTH = 0.9; // stroke width
-
-/** Loose fibres sticking out of the thread. Larger spacing = fewer fibres. */
-const FIBRE_SPACING = 45; // px along the thread
-const FIBRE_LENGTH = { min: 3, max: 6.5 }; // px
-const FIBRE_WIDTH = 0.8; // stroke width
 
 /** Knots beside each card: loop radius, dot radius (px). */
 const KNOT = {
@@ -84,17 +75,9 @@ const SHAPE = {
 /** Must match the layout breakpoint in RedThread.astro. */
 const MOBILE_QUERY = "(width < 760px)";
 
-/** Resolution of the drawn path (px between points). Lower = smoother, heavier. */
-const SAMPLE_STEP = 3;
-
 /* ==========================================================================
    Implementation
    ========================================================================== */
-
-interface Point {
-  x: number;
-  y: number;
-}
 
 interface Waypoint extends Point {
   /** Set on knot waypoints: which side the loop bulges to (1 = +x). */
@@ -110,20 +93,6 @@ const BOW_MARKUP = `
   <path class="thread-line" stroke-width="4" d="M-2 2C-8 16-18 28-30 40M2 2C8 16 16 30 30 38"/>
   <ellipse class="thread-fill" rx="6" ry="7"/>`;
 
-const round = (v: number) => Math.round(v * 10) / 10;
-
-function catmullRom(a: Point, b: Point, c: Point, d: Point, t: number): Point {
-  const t2 = t * t;
-  const t3 = t2 * t;
-  const f = (p0: number, p1: number, p2: number, p3: number) =>
-    0.5 *
-    (2 * p1 +
-      (p2 - p0) * t +
-      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
-      (3 * p1 - p0 - 3 * p2 + p3) * t3);
-  return { x: f(a.x, b.x, c.x, d.x), y: f(a.y, b.y, c.y, d.y) };
-}
-
 /** Offset of an element from `root`, ignoring transforms (cards may be mid-reveal). */
 function offsetWithin(el: HTMLElement, root: HTMLElement) {
   let x = 0;
@@ -135,14 +104,6 @@ function offsetWithin(el: HTMLElement, root: HTMLElement) {
     node = node.offsetParent;
   }
   return { x, y };
-}
-
-/** Deterministic pseudo-random numbers, so the fibres look the same on every load. */
-function random(seed: number) {
-  return () => {
-    seed = (seed * 16807) % 2147483647;
-    return seed / 2147483647;
-  };
 }
 
 interface Parts {
@@ -317,78 +278,14 @@ function init({ section, intro, ending, cards, balls }: Parts) {
     }
     points.push(end);
 
-    // 2. Resample at an even spacing along the curve.
-    const lengths = [0];
-    for (let i = 1; i < points.length; i++) {
-      lengths.push(
-        lengths[i - 1] +
-          Math.hypot(
-            points[i].x - points[i - 1].x,
-            points[i].y - points[i - 1].y,
-          ),
-      );
-    }
-    const total = lengths[lengths.length - 1];
-    const samples: (Point & { s: number })[] = [];
-    for (let s = 0, j = 0; s <= total; s += SAMPLE_STEP) {
-      while (j < points.length - 2 && lengths[j + 1] < s) j++;
-      const u = Math.min(
-        1,
-        (s - lengths[j]) / (lengths[j + 1] - lengths[j] || 1),
-      );
-      samples.push({
-        x: points[j].x + (points[j + 1].x - points[j].x) * u,
-        y: points[j].y + (points[j + 1].y - points[j].y) * u,
-        s,
-      });
-    }
-    samples.push({ ...end, s: total });
-
-    // 3. Wobble, twist ticks and fibres.
-    const rand = random(7);
-    const tickEvery = Math.max(1, Math.round(TICK_SPACING / SAMPLE_STEP));
-    const fibreEvery = Math.max(1, Math.round(FIBRE_SPACING / SAMPLE_STEP));
-    let coreD = "";
-    let ticksD = "";
-    let fibresD = "";
-    let minY = Infinity;
-    let maxY = -Infinity;
-    samples.forEach((p, i) => {
-      const p0 = samples[Math.max(0, i - 1)];
-      const p1 = samples[Math.min(samples.length - 1, i + 1)];
-      const m = Math.hypot(p1.x - p0.x, p1.y - p0.y) || 1;
-      const dx = (p1.x - p0.x) / m;
-      const dy = (p1.y - p0.y) / m;
-      const nx = -dy;
-      const ny = dx;
-      const ramp = Math.min(1, p.s / WOBBLE_RAMP);
-      const w =
-        ramp *
-        WOBBLE.reduce(
-          (sum, wave) =>
-            sum + wave.amplitude * Math.sin(p.s / wave.wavelength + wave.phase),
-          0,
-        );
-      const x = p.x + nx * w;
-      const y = p.y + ny * w;
-      minY = Math.min(minY, y);
-      maxY = Math.max(maxY, y);
-      coreD += `${i ? "L" : "M"}${round(x)} ${round(y)}`;
-      if (i % tickEvery === 0 && i > 1 && i < samples.length - 2) {
-        const tx = nx * TICK_HALF_WIDTH + dx * TICK_SLANT;
-        const ty = ny * TICK_HALF_WIDTH + dy * TICK_SLANT;
-        ticksD += `M${round(x - tx)} ${round(y - ty)}L${round(x + tx)} ${round(y + ty)}`;
-      }
-      if (i % fibreEvery === Math.floor(fibreEvery / 2)) {
-        const side = rand() > 0.5 ? 1 : -1;
-        const l =
-          FIBRE_LENGTH.min + rand() * (FIBRE_LENGTH.max - FIBRE_LENGTH.min);
-        fibresD +=
-          `M${round(x + nx * side * 2)} ${round(y + ny * side * 2)}` +
-          `q${round(nx * side * l * 0.5 + dx * 2.5)} ${round(ny * side * l * 0.5 + dy * 2.5)} ` +
-          `${round(nx * side * l + dx * 1.2)} ${round(ny * side * l + dy * 1.2)}`;
-      }
-    });
+    // 2. Wobble, twist ticks and fibres (src/lib/thread.ts).
+    const {
+      core: coreD,
+      ticks: ticksD,
+      fibres: fibresD,
+      minY,
+      maxY,
+    } = drawThread(points);
     const dot = knot.dot;
     const knotsD = knotPoints
       .map(

@@ -31,6 +31,19 @@ Run `npm run build` and `npm run lint` before every commit; both must pass.
 
 On Windows, allow Node.js through the firewall on private networks when asked. To test the production build instead, run `npm run build`, then `npm run preview -- --host`.
 
+## Pages
+
+| Route                  | Page                                                                 |
+| ---------------------- | -------------------------------------------------------------------- |
+| `/`                    | Homepage, with the scroll-drawn red thread                           |
+| `/omada`               | The group: the three storytellers                                    |
+| `/nea`                 | News and events: upcoming events board and the chronicle of posts    |
+| `/nea/selida/<n>`      | Older pages of the chronicle                                         |
+| `/nea/kategoria/<cat>` | The chronicle filtered by category (with its own pages)              |
+| `/nea/<slug>`          | A post                                                               |
+| `/proskaleste-mas`     | Invite us: the letter form and the FAQ                               |
+| `404`                  | Not found: served by the host for any missing address, never indexed |
+
 ## Project structure
 
 ```
@@ -52,12 +65,13 @@ src/
     team.ts             /omada
     invite.ts           /proskaleste-mas
     news.ts             /nea and the post pages
+    not-found.ts        the 404 page
     contact.ts          every contact detail and the site URL
     images.ts           the image registry
   layouts/              BaseLayout (head, SEO tags, header, footer)
-  lib/                  news data layer and the Markdown plugin for posts
-  pages/                routes: /, /omada, /nea, /nea/<slug>, /proskaleste-mas
-  scripts/              the three client scripts (red thread, storytellers, invite form)
+  lib/                  news data layer, Markdown plugin for posts, SEO, thread drawing
+  pages/                one file per route (see "Pages" above)
+  scripts/              the four client scripts (red thread, storytellers, invite form, post page)
   sections/             page sections, grouped by page (home, team, invite, news)
   styles/               tokens.css (colours, fonts, spacing) and global.css
 ```

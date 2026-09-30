@@ -39,7 +39,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 ## Content
 
-- One data file per page: homepage and shared copy (header, footer, routes, flags) live in `src/data/site.ts`; every other page has its own file in `src/data/` (`team.ts` for `/omada`, `invite.ts` for `/proskaleste-mas`, `news.ts` for `/nea` and the post pages). No copy is hardcoded in components. Posts and events are content, not copy: see "News and events" below.
+- One data file per page: homepage and shared copy (header, footer, routes, flags) live in `src/data/site.ts`; every other page has its own file in `src/data/` (`team.ts` for `/omada`, `invite.ts` for `/proskaleste-mas`, `news.ts` for `/nea` and the post pages, `not-found.ts` for the 404 page). No copy is hardcoded in components. Posts and events are content, not copy: see "News and events" below.
 - Never use em dashes (—) in any copy. ESLint fails on them.
 - Greek labels are stored in normal case and uppercased with CSS (`text-transform: uppercase` under `lang="el"` drops the tonos and keeps the diaeresis).
 - Page routes are defined in `site.ts`: `/omada`, `/nea`, `/proskaleste-mas`. "Επικοινωνία" and "Προσκαλέστε μας" both point to `/proskaleste-mas`.
@@ -103,7 +103,7 @@ The tree above, beside and below the letter form is **not** an inline ornament. 
 
 ## Red thread
 
-- `src/scripts/red-thread.ts` (homepage) draws the thread. Its geometry tunables (tip position, wobble, ticks, fibres, knots, path shape) are named constants in the block at the top of the file. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
+- `src/scripts/red-thread.ts` (homepage) draws the thread. Its geometry tunables (tip position, knots, path shape) are named constants in the block at the top of the file. The thread's texture (wobble, twist ticks, fibres) is drawn by `drawThread()` in `src/lib/thread.ts`, with its own tunables at the top; the 404 page uses it too, so both threads look the same. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
 - Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write transforms and classes only.
 - Hidden reveal states exist only under `.is-animated`, which the script sets when motion is allowed. Without JavaScript, or with reduced motion, all content is visible.
 
@@ -211,6 +211,13 @@ All listing pages are real static pages, so the filter and the pagination work w
 4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`.
 5. Pages and the other components stay as they are.
 
+## 404 page
+
+- `src/pages/404.astro`, copy in `src/data/not-found.ts`. The host serves the built `404.html` for any address that does not exist.
+- The drawing: the `yarn-ball` ornament with a short red thread unrolling from it to a cut, frayed end. The thread is drawn at build time with `drawThread()` (`src/lib/thread.ts`), so it matches the homepage thread and needs no JavaScript. Its path (waypoints), the ball's place and the frayed strands are named constants at the top of the page.
+- On load the thread draws itself once with CSS, then its twist, fibres and cut end fade in (`--thread-draw-duration`, `--thread-draw-delay` in `tokens.css`). Skipped under reduced motion.
+- Always `noindex` (`noindex` on `BaseLayout`), whatever `LAUNCHED` says, and left out of the sitemap.
+
 ## SEO and launch
 
 - `site` in `astro.config.mjs` comes from `contact.siteUrl`. Canonical URLs, Open Graph URLs, the sitemap and robots.txt are all built from it.
@@ -249,6 +256,9 @@ Note: `Disallow: /` stops crawling, which also means crawlers never read the `no
 8. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger) of the homepage and of a post with a cover. Check the structured data of a post and of `/nea` (with upcoming events) with Google's Rich Results Test (search.google.com/test/rich-results).
 9. Test the red thread and the storytellers sequence on a real mid-range phone.
 10. **Daily rebuild** (so past events leave the "upcoming" board): in the host's settings, create a deploy hook (a secret URL that starts a new build), then schedule a daily request to it shortly after midnight Athens time, for example with the host's scheduled functions, a GitHub Actions `schedule` workflow or a cron service. Check the next day that a build ran. Once Sanity is connected, also trigger the same hook from Sanity's webhook on publish.
+11. **The old Blogspot blog:** its post URLs will stop existing once the posts move here. Before launch decide:
+    1. whether the old blog address sends visitors to the new site. Blogger's own "custom redirects" only work between addresses inside the blog, so check the current options when deciding; common approaches are moving the blog's custom domain (if it has one) to the new host, a redirect in the Blogger theme, or a notice with a link on the old blog; and
+    2. whether the most visited old posts that get migrated get redirects from their old paths to their new `/nea/<slug>` addresses (for example a `_redirects` file on the host, which works when the old blog's domain points to the new site). Check which old posts are visited most (Blogger stats or Search Console) and list old URL and new slug side by side.
 
 ## How to change fonts
 

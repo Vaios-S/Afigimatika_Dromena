@@ -259,6 +259,11 @@
   --thread-verse-delay: 280ms; /* added per verse line */
   --thread-end-duration: 800ms; /* bow and closing line fade */
 
+  /* The cut thread on the 404 page: drawn once on load (not with reduced motion). */
+  --thread-cut-width: 22.5rem; /* 360, width of the drawing */
+  --thread-draw-duration: 1400ms;
+  --thread-draw-delay: 250ms;
+
   /* ------------------------------------------------------------------------
      Storytellers sequence (/omada)
      Scroll distance and hysteresis live in src/scripts/storytellers.ts.

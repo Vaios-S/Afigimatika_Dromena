@@ -1,0 +1,291 @@
+---
+/**
+ * The 404 page: the yarn ball from the homepage, with a short length of red
+ * thread unrolling from it and ending in a cut, frayed end.
+ *
+ * The thread is drawn here at build time with the homepage thread's texture
+ * (src/lib/thread.ts), so the page needs no JavaScript. It draws itself once
+ * on load with CSS, which is skipped under reduced motion.
+ * Always noindex, whatever the LAUNCHED flag says.
+ */
+import Button from "../components/Button.astro";
+import Ornament from "../components/Ornament.astro";
+import { notFound } from "../data/not-found";
+import { SHOW_PLACEHOLDER_TAGS, site } from "../data/site";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  catmullRom,
+  drawThread,
+  FIBRE_WIDTH,
+  round,
+  TICK_WIDTH,
+  type Point,
+} from "../lib/thread";
+
+/* ==========================================================================
+   Drawing (units of the 360x120 viewBox; 1 unit = 1px at full size)
+   ========================================================================== */
+
+const VIEW = { width: 360, height: 120 };
+
+/** The yarn ball: its box in the drawing, the ball's radius as a share of the box, and where the thread leaves it (degrees below horizontal). */
+const BALL = { x: 12, y: 28, size: 72, radius: 0.4167, leave: 35 };
+
+/** Where the thread goes after leaving the ball, to its cut end. */
+const WAYPOINTS: Point[] = [
+  { x: 100, y: 96 },
+  { x: 150, y: 98 },
+  { x: 205, y: 80 },
+  { x: 258, y: 68 },
+  { x: 300, y: 76 },
+  { x: 330, y: 70 },
+];
+
+/** The frayed end: strands fanning out from the cut (degrees from the thread's direction, length, width). */
+const FRAY = [
+  { angle: -34, length: 13, width: 1.3 },
+  { angle: -12, length: 18, width: 1.7 },
+  { angle: 9, length: 15, width: 1.5 },
+  { angle: 30, length: 11, width: 1.2 },
+];
+
+// The thread leaves the ball low on its right side, just inside its edge.
+const center = { x: BALL.x + BALL.size / 2, y: BALL.y + BALL.size / 2 };
+const leave = (BALL.leave * Math.PI) / 180;
+const r = BALL.size * BALL.radius - 2;
+const start = {
+  x: center.x + r * Math.cos(leave),
+  y: center.y + r * Math.sin(leave),
+};
+const waypoints = [start, ...WAYPOINTS];
+
+// A smooth curve through the waypoints, then the thread's texture.
+const points: Point[] = [];
+for (let i = 0; i < waypoints.length - 1; i++) {
+  const a = waypoints[i - 1] ?? waypoints[i];
+  const b = waypoints[i];
+  const c = waypoints[i + 1];
+  const d = waypoints[i + 2] ?? c;
+  const n = Math.max(6, Math.ceil(Math.hypot(c.x - b.x, c.y - b.y) / 4));
+  for (let s = 0; s < n; s++) points.push(catmullRom(a, b, c, d, s / n));
+}
+const end = waypoints[waypoints.length - 1];
+points.push(end);
+const thread = drawThread(points, 11);
+
+// The cut: short strands fanning out from the end, each slightly curved.
+const before = points[points.length - 4];
+const heading = Math.atan2(end.y - before.y, end.x - before.x);
+const fray = FRAY.map(({ angle, length, width }) => {
+  const a = heading + (angle * Math.PI) / 180;
+  const bend = a + (angle >= 0 ? 0.35 : -0.35);
+  const bx = end.x - 2 * Math.cos(heading);
+  const by = end.y - 2 * Math.sin(heading);
+  const d =
+    `M${round(bx)} ${round(by)}` +
+    `q${round(Math.cos(a) * length * 0.5)} ${round(Math.sin(a) * length * 0.5)} ` +
+    `${round(Math.cos(bend) * length)} ${round(Math.sin(bend) * length)}`;
+  return { d, width };
+});
+
+const ballStyle = [
+  `left: ${String((BALL.x / VIEW.width) * 100)}%`,
+  `top: ${String((BALL.y / VIEW.height) * 100)}%`,
+  `width: ${String((BALL.size / VIEW.width) * 100)}%`,
+].join("; ");
+---
+
+<BaseLayout title={notFound.title} description={notFound.description} noindex>
+  <section class="not-found" aria-labelledby="not-found-title">
+    <div class="skein" aria-hidden="true">
+      <svg
+        class="thread"
+        viewBox={`0 0 ${String(VIEW.width)} ${String(VIEW.height)}`}
+        focusable="false"
+      >
+        <path
+          class="thread-line thread-core"
+          pathLength="1"
+          d={thread.core}
+        ></path>
+        <g class="thread-texture">
+          <path
+            class="thread-twist"
+            stroke-width={TICK_WIDTH}
+            d={thread.ticks}
+          ></path>
+          <path
+            class="thread-line"
+            stroke-width={FIBRE_WIDTH}
+            d={thread.fibres}
+          ></path>
+          {fray.map((strand) => (
+            <path
+              class="thread-line"
+              stroke-width={strand.width}
+              d={strand.d}
+            />
+          ))}
+        </g>
+      </svg>
+      <Ornament name="yarn-ball" class="rough ball" style={ballStyle} />
+    </div>
+
+    {SHOW_PLACEHOLDER_TAGS && notFound.placeholder && (
+      <p class="tag-row">
+        <span class="placeholder-tag">{site.placeholderTag}</span>
+      </p>
+    )}
+    <p class="label">{notFound.label}</p>
+    <h1 id="not-found-title" class="title">
+      {notFound.heading}
+    </h1>
+    <p class="text">{notFound.text}</p>
+
+    <div class="actions">
+      <Button href={notFound.home.href}>{notFound.home.label}</Button>
+      <ul class="links" role="list">
+        {notFound.links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: var(--width-text);
+    margin-inline: auto;
+    padding: var(--space-section) var(--space-gutter) var(--space-8xl);
+    text-align: center;
+  }
+
+  /* The drawing: the thread's viewBox fills the box; the ball sits on top at its place in it. */
+  .skein {
+    position: relative;
+    width: min(var(--thread-cut-width), 100%);
+    aspect-ratio: 3;
+  }
+
+  .thread {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .skein :global(.ball) {
+    position: absolute;
+    height: auto;
+    color: var(--color-ink-red);
+  }
+
+  .thread-line,
+  .thread-twist {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .thread-line {
+    stroke: var(--thread-color);
+  }
+
+  .thread-core {
+    stroke-width: var(--thread-width);
+  }
+
+  .thread-twist {
+    stroke: var(--thread-twist-color);
+  }
+
+  .tag-row {
+    margin-top: var(--space-xl);
+  }
+
+  .label {
+    margin-top: var(--space-2xl);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .tag-row + .label {
+    margin-top: var(--space-s);
+  }
+
+  .title {
+    margin-top: var(--space-s);
+    font-size: var(--text-cta);
+    line-height: var(--leading-display);
+  }
+
+  .text {
+    max-width: 30rem;
+    margin-top: var(--space-l);
+    color: var(--color-ink-muted);
+    font-size: var(--text-lead);
+    line-height: var(--leading-body);
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-l);
+    margin-top: var(--space-3xl);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-touch);
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: var(--space-3xs);
+  }
+
+  .links a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* One-time draw on load: the thread unrolls, then its twist and the cut end appear. */
+  @media (prefers-reduced-motion: no-preference) {
+    .thread-core {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: draw var(--thread-draw-duration) var(--ease-out)
+        var(--thread-draw-delay) forwards;
+    }
+
+    .thread-texture {
+      opacity: 0;
+      animation: appear var(--thread-end-duration) ease
+        calc(var(--thread-draw-delay) + var(--thread-draw-duration) * 0.6)
+        forwards;
+    }
+  }
+
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes appear {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
