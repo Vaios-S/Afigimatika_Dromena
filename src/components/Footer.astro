@@ -5,11 +5,11 @@ import Button from "./Button.astro";
 import Ornament from "./Ornament.astro";
 
 interface Props {
-  /** Show the invitation ("Να φέρουμε ένα παραμύθι…"). Off on the invite page itself. */
+  /** Show the invitation ("Να φέρουμε ένα παραμύθι…"). Only pages that opt in, through BaseLayout's footerCta. */
   cta?: boolean;
 }
 
-const { cta = true } = Astro.props;
+const { cta = false } = Astro.props;
 const year = new Date().getFullYear();
 ---
 

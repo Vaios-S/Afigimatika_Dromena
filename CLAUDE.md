@@ -44,6 +44,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - Greek labels are stored in normal case and uppercased with CSS (`text-transform: uppercase` under `lang="el"` drops the tonos and keeps the diaeresis).
 - Page routes are defined in `site.ts`: `/omada`, `/nea`, `/proskaleste-mas`. "Επικοινωνία" and "Προσκαλέστε μας" both point to `/proskaleste-mas`.
 - Placeholder tags ("ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ") are turned on or off everywhere with a single flag in `site.ts`.
+- **Footer invitation** ("Να φέρουμε ένα παραμύθι… στον δικό σας χώρο;" with the button): shown only on the homepage and `/omada`. It is off by default; a page opts in with `footerCta` on `BaseLayout`, which passes it to `Footer` as `cta`. Every other page (`/nea` and all its listing and post pages, `/proskaleste-mas`, the 404) has no invitation and needs no prop.
 
 ## Contact info
 
@@ -118,7 +119,7 @@ The tree above, beside and below the letter form is **not** an inline ornament. 
 
 ## Invite form (/proskaleste-mas)
 
-- The footer's invitation ("Να φέρουμε ένα παραμύθι…" with the button) is hidden on this page with `footerCta={false}` on `BaseLayout`, which passes it to `Footer` as `cta`. Other pages keep the default (`true`).
+- No footer invitation on this page (see "Footer invitation" under Content).
 - The FAQ uses native `<details>`/`<summary>`, so it works without JavaScript. The oak leaf turns 90° when a question opens (`--duration-turn`); reduced motion removes the animation. A question is removed by deleting its entry in `invite.ts`; the placeholder tag shows while any answer is marked `placeholder`.
 
 - The letter form in `src/sections/invite/Letter.astro` sends through Web3Forms. Its access key comes from the environment variable `PUBLIC_WEB3FORMS_KEY` (see `.env.example`); `.env` is gitignored. The key is public by design: Web3Forms keys are sent with every submission.
@@ -193,7 +194,7 @@ All listing pages are real static pages, so the filter and the pagination work w
 
 ### Post page
 
-- `src/pages/nea/[slug].astro`: breadcrumb, the art nouveau title frame (category, title, date, venue and city when set), the cover, the body, the gallery, the share row, related posts and a quiet link back to `/nea`. No footer invitation (`footerCta={false}`).
+- `src/pages/nea/[slug].astro`: breadcrumb, the art nouveau title frame (category, title, date, venue and city when set), the cover, the body, the gallery, the share row, related posts and a quiet link back to `/nea`. No footer invitation.
 - **Gallery** (`src/sections/news/PostGallery.astro`, only when the post has gallery photos): a horizontal strip with native scrolling and scroll-snap, one large photo and a peek of the next, caption under each. Its title is "Από τη βραδιά" on event reports and "Φωτογραφίες" otherwise (`labelByCategory` in `news.ts`).
   - Without JavaScript: the strip scrolls by touch, trackpad or arrow keys once focused, and each photo links to its large version (up to 1600px wide, made at build time).
   - With JavaScript (`src/scripts/post.ts`): the counter ("2 / 5", announced to screen readers as "Φωτογραφία 2 από 5"), previous/next buttons that turn off at the ends, arrow keys, Home and End on the focused strip. Clicking a photo opens it in a native `<dialog>`: Esc or a click outside closes it, arrow keys change the photo, and on closing the strip shows the last photo seen and focus returns to it. With reduced motion the strip jumps instead of scrolling smoothly.

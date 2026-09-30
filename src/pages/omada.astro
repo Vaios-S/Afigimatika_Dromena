@@ -6,7 +6,11 @@ import Intro from "../sections/team/Intro.astro";
 import Storytellers from "../sections/team/Storytellers.astro";
 ---
 
-<BaseLayout title={team.meta.title} description={team.meta.description}>
+<BaseLayout
+  title={team.meta.title}
+  description={team.meta.description}
+  footerCta
+>
   <Intro />
   <Storytellers />
   <Collaborations />

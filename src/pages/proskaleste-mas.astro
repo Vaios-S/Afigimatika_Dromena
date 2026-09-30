@@ -8,11 +8,7 @@ import Intro from "../sections/invite/Intro.astro";
 import Letter from "../sections/invite/Letter.astro";
 ---
 
-<BaseLayout
-  title={invite.meta.title}
-  description={invite.meta.description}
-  footerCta={false}
->
+<BaseLayout title={invite.meta.title} description={invite.meta.description}>
   <Intro />
   <section class="ages">
     <AgesFrieze level={2} />

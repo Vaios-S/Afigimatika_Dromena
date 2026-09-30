@@ -9,7 +9,7 @@ interface Props {
   /** Page title; the site name is appended. Omit on the homepage. */
   title?: string;
   description?: string;
-  /** Show the footer invitation; turned off on the invite page. */
+  /** Show the footer invitation. Off unless a page opts in (the homepage and /omada). */
   footerCta?: boolean;
   /** Share image (from shareImage in src/lib/seo.ts); the site image by default. */
   image?: ShareImage;
@@ -24,7 +24,7 @@ interface Props {
 const {
   title,
   description = site.description,
-  footerCta = true,
+  footerCta = false,
   article,
   structuredData = [],
   noindex = false,
