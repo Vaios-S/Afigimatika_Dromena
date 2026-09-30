@@ -14,6 +14,7 @@ import PostBody from "../../components/news/PostBody.astro";
 import { categories, news } from "../../data/news";
 import { routes, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { articleData, shareImage } from "../../lib/seo";
 import {
   dateParts,
   getPosts,
@@ -45,6 +46,7 @@ const long = post.title.length > LONG_TITLE;
 const related = await getRelatedPosts(post);
 
 const url = new URL(Astro.url.pathname, Astro.site).href;
+const image = await shareImage(Astro.site, post.cover);
 const share = {
   facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
   email: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(`${post.excerpt}
@@ -53,7 +55,17 @@ ${url}`)}`,
 };
 ---
 
-<BaseLayout title={post.title} description={post.excerpt} footerCta={false}>
+<BaseLayout
+  title={post.title}
+  description={post.excerpt}
+  footerCta={false}
+  image={image}
+  article={{
+    published: post.date,
+    section: categories[post.category].label,
+  }}
+  structuredData={[articleData(Astro.site, post, url, image.url)]}
+>
   <div class="post">
     <nav class="crumbs" aria-label={copy.breadcrumbLabel}>
       <ol role="list">

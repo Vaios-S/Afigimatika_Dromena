@@ -214,8 +214,11 @@ All listing pages are real static pages, so the filter and the pagination work w
 ## SEO and launch
 
 - `site` in `astro.config.mjs` comes from `contact.siteUrl`. Canonical URLs, Open Graph URLs, the sitemap and robots.txt are all built from it.
-- `BaseLayout.astro` outputs the title, description, canonical, Open Graph and Twitter card tags, favicons (`public/favicon.svg`, `public/apple-touch-icon.png`) and JSON-LD (`PerformingGroup`, values from `contact.ts` and `site.ts` only).
-- `@astrojs/sitemap` generates `sitemap-index.xml`. `src/pages/robots.txt.ts` generates `robots.txt`.
+- `BaseLayout.astro` outputs the title, description, canonical, Open Graph and Twitter card tags, favicons (`public/favicon.svg`, `public/apple-touch-icon.png`) and JSON-LD. Pages can pass their own share image (`image`), mark themselves as an article (`article`, which sets `og:type` to article with `article:published_time` and `article:section`) and add structured data (`structuredData`).
+- `src/lib/seo.ts` holds the share image and the structured data, with values from `contact.ts`, `site.ts`, `images.ts` and the news data layer only:
+  - `shareImage()`: a 1200x630 JPEG, made at build time from a post's cover, or the site image (`ogImage`) when there is no cover or it is a placeholder.
+  - JSON-LD is one `@graph`: the group (`PerformingGroup`, on every page, with the id `/#group`), plus an `Article` on each post (title, excerpt, date, section, share image, the group as author and publisher) and an `Event` for each upcoming event on `/nea` (date and time with the Athens offset, or the day alone while the time is not announced; venue and city; the event's link or `/nea`).
+- `@astrojs/sitemap` generates `sitemap-index.xml` with every page, including each post and every listing page. `src/pages/robots.txt.ts` generates `robots.txt`.
 
 ### The LAUNCHED flag
 
@@ -243,7 +246,7 @@ Note: `Disallow: /` stops crawling, which also means crawlers never read the `no
 5. **Copy:** replace the provisional milestone, testimonial and partner texts in `site.ts`, the texts marked `placeholder` in `team.ts` and `invite.ts` (including every FAQ answer, which must be confirmed with the group), and add partner logos.
 6. **Placeholder tags off:** set `SHOW_PLACEHOLDER_TAGS = false` in `site.ts`.
 7. **LAUNCHED on:** set `LAUNCHED = true` in `site.ts`.
-8. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger).
+8. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger) of the homepage and of a post with a cover. Check the structured data of a post and of `/nea` (with upcoming events) with Google's Rich Results Test (search.google.com/test/rich-results).
 9. Test the red thread and the storytellers sequence on a real mid-range phone.
 10. **Daily rebuild** (so past events leave the "upcoming" board): in the host's settings, create a deploy hook (a secret URL that starts a new build), then schedule a daily request to it shortly after midnight Athens time, for example with the host's scheduled functions, a GitHub Actions `schedule` workflow or a cron service. Check the next day that a build ran. Once Sanity is connected, also trigger the same hook from Sanity's webhook on publish.
 
