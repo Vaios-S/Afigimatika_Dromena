@@ -1,0 +1,201 @@
+---
+/**
+ * "Διαβάστε επίσης": up to three other posts, same category first, then the
+ * most recent (getRelatedPosts in src/lib/news.ts).
+ */
+import Ornament from "../../components/Ornament.astro";
+import Photo from "../../components/Photo.astro";
+import { categories, news } from "../../data/news";
+import { dateParts, type Post } from "../../lib/news";
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+<section class="related" aria-labelledby="related-title">
+  <div class="crest">
+    <Ornament name="crest" />
+  </div>
+  <h2 id="related-title" class="title">
+    {news.post.related.title}
+  </h2>
+  <ul class="entries" role="list">
+    {posts.map((post, i) => {
+      const date = dateParts(post.date);
+      return (
+        <li class:list={["entry", { "has-thumb": post.cover }]}>
+          <time class="date" datetime={post.date}>
+            <span class="day">{date.day}</span>
+            <span class="month">
+              {date.monthShort} {date.year}
+            </span>
+          </time>
+          <div class="text">
+            <p class="category">{categories[post.category].label}</p>
+            <h3 class="entry-title">
+              <a href={post.url}>{post.title}</a>
+            </h3>
+          </div>
+          {post.cover && (
+            <div class="thumb" style={`--lean: ${i % 2 ? 1 : -1}`}>
+              <Photo
+                image={post.cover}
+                ratio="4 / 3"
+                compact
+                sizes="(width < 760px) 9.375rem, 8.875rem"
+              />
+            </div>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<style>
+  .related {
+    margin-top: var(--space-7xl);
+  }
+
+  .crest {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    color: var(--color-ink-red);
+  }
+
+  .crest::before,
+  .crest::after {
+    content: "";
+    flex: 1;
+    height: var(--rule-hair);
+    background: var(--color-ink-red);
+  }
+
+  .crest :global(svg) {
+    flex: none;
+    width: 13.75rem;
+    height: 3rem;
+  }
+
+  .title {
+    margin-top: var(--space-l);
+    font-size: var(--text-list-title);
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .entries {
+    margin-top: var(--space-xl);
+    padding: 0;
+    border-top: var(--rule-thin) solid var(--color-ink-red);
+    list-style: none;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 5.625rem minmax(0, 1fr) 9.5rem;
+    align-items: start;
+    gap: 0 var(--space-l);
+    padding-block: var(--space-l);
+    border-bottom: var(--rule-hair) solid var(--color-rule-soft);
+  }
+
+  .entry:not(.has-thumb) .text {
+    grid-column: 2 / 4;
+  }
+
+  .date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-display);
+  }
+
+  .day {
+    font-size: var(--text-related-day);
+    font-variant-numeric: oldstyle-nums;
+    line-height: 0.9;
+  }
+
+  .month {
+    margin-top: var(--space-3xs);
+    color: var(--color-ink-red);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .category {
+    color: var(--color-ink-red);
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    font-style: italic;
+  }
+
+  .entry-title {
+    margin-top: var(--space-3xs);
+    font-size: var(--text-quote-sm);
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+
+  .entry-title a {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .entry-title a:hover {
+    color: var(--color-ink-red);
+  }
+
+  .thumb {
+    padding: var(--space-3xs);
+    border: var(--rule-hair) solid var(--color-ink-red);
+    transform: rotate(calc(var(--lean) * 1deg));
+  }
+
+  @media (width < 760px) {
+    .related {
+      margin-top: var(--space-5xl);
+    }
+
+    .crest :global(svg) {
+      width: 10rem;
+      height: 2.1875rem;
+    }
+
+    .title {
+      margin-top: var(--space-m);
+    }
+
+    .entries {
+      margin-top: var(--space-m);
+    }
+
+    .entry {
+      grid-template-columns: 3.375rem minmax(0, 1fr);
+      gap: 0 var(--space-s);
+      padding-block: var(--space-m);
+    }
+
+    .entry:not(.has-thumb) .text {
+      grid-column: 2;
+    }
+
+    .thumb {
+      grid-column: 2;
+      width: 10rem;
+      margin-top: var(--space-xs);
+      transform: none;
+    }
+
+    .thumb :global(.photo) {
+      aspect-ratio: 3 / 2;
+    }
+  }
+</style>

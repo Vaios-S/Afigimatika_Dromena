@@ -73,5 +73,34 @@ export const news = {
     placeholder: true,
     breadcrumbLabel: "Διαδρομή",
     back: "Πίσω στο χρονικό",
+
+    gallery: {
+      /** Title over the photos; event reports use their own. */
+      label: "Φωτογραφίες",
+      labelByCategory: { afigiseis: "Από τη βραδιά" } as Partial<
+        Record<keyof typeof categories, string>
+      >,
+      stripLabel: "Λωρίδα φωτογραφιών, με τα βέλη αλλάζετε φωτογραφία",
+      /** Name of each photo's link; {alt} is filled in. */
+      enlarge: "Μεγέθυνση: {alt}",
+      previous: "Προηγούμενη φωτογραφία",
+      next: "Επόμενη φωτογραφία",
+      /** Read out when the photo changes; {current} and {total} are filled in. */
+      status: "Φωτογραφία {current} από {total}",
+      dialogLabel: "Φωτογραφία σε μεγέθυνση",
+      close: "Κλείσιμο",
+    },
+
+    share: {
+      label: "Μοιραστείτε το",
+      facebook: "Facebook",
+      copy: "Αντιγραφή συνδέσμου",
+      copied: "Αντιγράφηκε",
+      email: "Email",
+    },
+
+    related: {
+      title: "Διαβάστε επίσης",
+    },
   },
 };

@@ -32,7 +32,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 ## Code
 
 - Minimal, clean code. As few components as possible, no abstractions until they are needed.
-- JavaScript only where required, and always as an enhancement (every page works without it). There are three client scripts: the red thread (`red-thread.ts`), the storytellers sequence (`storytellers.ts`) and the invite form (`letter.ts`). Everything else is static HTML and CSS.
+- JavaScript only where required, and always as an enhancement (every page works without it). There are four client scripts: the red thread (`red-thread.ts`), the storytellers sequence (`storytellers.ts`), the invite form (`letter.ts`) and the post page gallery and copy link (`post.ts`). Everything else is static HTML and CSS.
 - Colors, fonts and spacing come only from tokens in `src/styles/tokens.css`. No raw values in components.
 - Inside `.astro` `<style>` blocks, keep each CSS comment on one line. prettier-plugin-astro re-indents the continuation lines of multi-line comments on every run, so `npm run lint` never settles.
 - Semantic HTML and accessibility: AA contrast, visible focus states, alt text on images, `aria-hidden="true"` on decorative SVGs, respect `prefers-reduced-motion`.
@@ -193,7 +193,13 @@ All listing pages are real static pages, so the filter and the pagination work w
 
 ### Post page
 
-- `src/pages/nea/[slug].astro`: breadcrumb, the art nouveau title frame (category, title, date, venue and city when set), the cover, the body and a quiet link back to `/nea`. No footer invitation (`footerCta={false}`).
+- `src/pages/nea/[slug].astro`: breadcrumb, the art nouveau title frame (category, title, date, venue and city when set), the cover, the body, the gallery, the share row, related posts and a quiet link back to `/nea`. No footer invitation (`footerCta={false}`).
+- **Gallery** (`src/sections/news/PostGallery.astro`, only when the post has gallery photos): a horizontal strip with native scrolling and scroll-snap, one large photo and a peek of the next, caption under each. Its title is "Από τη βραδιά" on event reports and "Φωτογραφίες" otherwise (`labelByCategory` in `news.ts`).
+  - Without JavaScript: the strip scrolls by touch, trackpad or arrow keys once focused, and each photo links to its large version (up to 1600px wide, made at build time).
+  - With JavaScript (`src/scripts/post.ts`): the counter ("2 / 5", announced to screen readers as "Φωτογραφία 2 από 5"), previous/next buttons that turn off at the ends, arrow keys, Home and End on the focused strip. Clicking a photo opens it in a native `<dialog>`: Esc or a click outside closes it, arrow keys change the photo, and on closing the strip shows the last photo seen and focus returns to it. With reduced motion the strip jumps instead of scrolling smoothly.
+  - Photo share of the strip: `--gallery-item` and `--gallery-item-mobile` in `tokens.css`.
+- **Share row**: Facebook and email are plain links built from the page's canonical URL (so they use the real domain only once `siteUrl` is set). "Αντιγραφή συνδέσμου" appears only when the browser can copy (HTTPS or localhost), copies the address the visitor is on, and shows "Αντιγράφηκε" for `COPIED_TIME` (top of `post.ts`). No third-party scripts.
+- **Related posts** (`src/sections/news/RelatedPosts.astro`): up to three, same category first, then the most recent (`getRelatedPosts`). Thumbnails only for posts with a cover.
 - The frame is a fixed top and base with stems that stretch to the height of the title, so it holds any title length. Titles longer than `LONG_TITLE` characters (a constant at the top of the page) are set smaller.
 - The "ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ" tag on posts is `news.post.placeholder` in `src/data/news.ts`; set it to `false` when the sample posts are replaced by real ones.
 

@@ -1,0 +1,477 @@
+---
+/**
+ * A post's photos: a horizontal strip with native scrolling and scroll-snap,
+ * one large photo in view and a peek of the next, then the enlarged view in a
+ * native <dialog>.
+ *
+ * Without JavaScript the strip scrolls by itself (touch, trackpad, or the
+ * arrow keys once focused) and each photo links to its large version. The
+ * counter, the previous/next buttons and the dialog are added by
+ * src/scripts/post.ts.
+ */
+import { getImage } from "astro:assets";
+import placeholderPhoto from "../../assets/placeholders/photo.svg";
+import Photo from "../../components/Photo.astro";
+import { news } from "../../data/news";
+import type { NewsImage, Post } from "../../lib/news";
+
+/** Widest version made for the enlarged view (px). */
+const FULL_WIDTH = 1600;
+
+/** Placeholder shape in the enlarged view (3:2). */
+const PLACEHOLDER_SIZE = { width: 1500, height: 1000 };
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const copy = news.post.gallery;
+const label = copy.labelByCategory[post.category] ?? copy.label;
+const total = post.gallery.length;
+
+async function large(image: NewsImage) {
+  if (!image.src) return { src: placeholderPhoto.src, ...PLACEHOLDER_SIZE };
+  const width = Math.min(FULL_WIDTH, image.width ?? FULL_WIDTH);
+  const height = Math.round(width * ((image.height ?? 2) / (image.width ?? 3)));
+  const result =
+    typeof image.src === "string"
+      ? await getImage({ src: image.src, width, height })
+      : await getImage({ src: image.src, width });
+  return { src: result.src, width, height };
+}
+
+const photos = await Promise.all(
+  post.gallery.map(async (image) => ({ image, large: await large(image) })),
+);
+---
+
+<section
+  class="gallery"
+  aria-labelledby="gallery-title"
+  aria-roledescription="carousel"
+  data-gallery
+  data-status={copy.status}
+>
+  <div class="head">
+    <h2 id="gallery-title" class="label">
+      {label}
+    </h2>
+    <span class="rule" aria-hidden="true"></span>
+    <p class="counter" aria-hidden="true" hidden data-counter>
+      1 / {total}
+    </p>
+    <p class="visually-hidden" aria-live="polite" data-live></p>
+  </div>
+
+  <div
+    class="strip"
+    role="region"
+    tabindex="0"
+    aria-label={copy.stripLabel}
+    data-strip
+  >
+    {photos.map(({ image, large }) => (
+      <figure class="item" data-item>
+        <a
+          class="enlarge"
+          href={large.src}
+          aria-label={copy.enlarge.replace("{alt}", image.alt)}
+          data-alt={image.alt}
+          data-width={large.width}
+          data-height={large.height}
+        >
+          <Photo
+            image={image}
+            ratio="3 / 2"
+            sizes="(width < 760px) 86vw, 40rem"
+          />
+        </a>
+        {image.caption && <figcaption>{image.caption}</figcaption>}
+      </figure>
+    ))}
+    <div class="spacer" aria-hidden="true"></div>
+  </div>
+
+  <div class="controls" hidden data-controls>
+    <button type="button" class="step" aria-label={copy.previous} data-prev>
+      <svg viewBox="0 0 22 14" aria-hidden="true" focusable="false">
+        <path d="M22 7H3M9 1 2 7l7 6"></path>
+      </svg>
+    </button>
+    <button type="button" class="step" aria-label={copy.next} data-next>
+      <svg viewBox="0 0 22 14" aria-hidden="true" focusable="false">
+        <path d="M0 7h19M13 1l7 6-7 6"></path>
+      </svg>
+    </button>
+  </div>
+
+  <dialog class="lightbox" aria-label={copy.dialogLabel} data-lightbox>
+    <div class="lightbox-inner">
+      <div class="lightbox-head">
+        <p class="label">{label}</p>
+        <button type="button" class="close" data-close>
+          <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+            <path d="m1 1 10 10M11 1 1 11"></path>
+          </svg>
+          {copy.close}
+        </button>
+      </div>
+      <div class="lightbox-frame">
+        <img
+          src={photos[0].large.src}
+          alt={photos[0].image.alt}
+          width={photos[0].large.width}
+          height={photos[0].large.height}
+          style={`--ratio: ${photos[0].large.width / photos[0].large.height}`}
+          data-lightbox-image
+        />
+      </div>
+      <div class="lightbox-foot">
+        <p class="lightbox-caption" data-lightbox-caption></p>
+        <div class="lightbox-controls">
+          <button
+            type="button"
+            class="step"
+            aria-label={copy.previous}
+            data-prev
+          >
+            <svg viewBox="0 0 22 14" aria-hidden="true" focusable="false">
+              <path d="M22 7H3M9 1 2 7l7 6"></path>
+            </svg>
+          </button>
+          <p class="counter" aria-hidden="true" data-counter>
+            1 / {total}
+          </p>
+          <button type="button" class="step" aria-label={copy.next} data-next>
+            <svg viewBox="0 0 22 14" aria-hidden="true" focusable="false">
+              <path d="M0 7h19M13 1l7 6-7 6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="visually-hidden" aria-live="polite" data-live></p>
+    </div>
+  </dialog>
+</section>
+
+<style>
+  .gallery {
+    margin-top: var(--space-6xl);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .head .label {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .rule {
+    flex: 1;
+    height: var(--rule-hair);
+    background: var(--color-ink-red);
+  }
+
+  .counter {
+    min-width: 3.25rem;
+    font-family: var(--font-display);
+    font-size: var(--text-tile);
+    font-variant-numeric: oldstyle-nums;
+    text-align: right;
+  }
+
+  /* The strip: native scrolling that snaps to each photo. */
+  .strip {
+    --gap: var(--space-m);
+    --item: var(--gallery-item);
+
+    display: flex;
+    gap: var(--gap);
+    margin-top: var(--space-l);
+    padding-bottom: var(--space-xs);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-color: var(--color-ink-red) var(--color-paper-shade);
+    scrollbar-width: thin;
+  }
+
+  .strip:focus-visible {
+    outline-offset: var(--space-3xs);
+  }
+
+  .item {
+    display: flex;
+    flex: 0 0 var(--item);
+    flex-direction: column;
+    gap: var(--space-2xs);
+    scroll-snap-align: start;
+  }
+
+  /* Room after the last photo, so it can snap to the start like the others. */
+  .spacer {
+    flex: 0 0 calc(100% - var(--item) - var(--gap));
+  }
+
+  .enlarge {
+    display: block;
+    padding: var(--space-2xs);
+    border: var(--rule-thin) solid var(--color-ink-red);
+    background: var(--color-paper);
+    box-shadow: var(--frame-inner);
+    cursor: zoom-in;
+  }
+
+  .item figcaption {
+    color: var(--color-ink-muted);
+    font-size: var(--text-small);
+    font-style: italic;
+    line-height: var(--leading-caption);
+  }
+
+  /* Previous / next: square buttons with a double rule, off at the ends. */
+  .controls:not([hidden]) {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2xs);
+    margin-top: var(--space-xs);
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    min-height: 3rem;
+    border: var(--rule-thin) solid currentColor;
+    background: var(--color-paper);
+    box-shadow:
+      inset 0 0 0 var(--rule-thick) var(--color-paper),
+      inset 0 0 0 calc(var(--rule-thick) + var(--rule-hair)) currentColor;
+    color: var(--color-ink-red);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) ease;
+  }
+
+  .step:hover:not(:disabled) {
+    background-color: var(--color-paper-shade);
+  }
+
+  .step:disabled {
+    color: var(--color-rule-soft);
+    cursor: default;
+  }
+
+  .step svg {
+    width: 1.375rem;
+    height: 0.875rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+  }
+
+  /* Enlarged view ------------------------------------------------------------ */
+  .lightbox {
+    --color-focus: var(--color-paper);
+
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    padding: var(--space-3xl);
+    border: 0;
+    background: var(--lightbox-backdrop);
+    color: var(--color-paper);
+  }
+
+  .lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox::backdrop {
+    background: transparent;
+  }
+
+  .lightbox-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    width: min(var(--lightbox-width), 100%);
+  }
+
+  .lightbox-head,
+  .lightbox-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+  }
+
+  .lightbox .label {
+    color: var(--color-paper);
+  }
+
+  .close {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: var(--size-touch);
+    padding: 0 var(--space-m);
+    border: 0;
+    background: var(--color-paper);
+    box-shadow:
+      inset 0 0 0 var(--rule-thick) var(--color-paper),
+      inset 0 0 0 calc(var(--rule-thick) + var(--rule-hair))
+        var(--color-oxblood);
+    color: var(--color-oxblood);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+  }
+
+  .close svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.6;
+  }
+
+  /* The frame hugs the photo, whatever its shape. */
+  .lightbox-frame {
+    align-self: center;
+    padding: calc(var(--space-2xs) + var(--rule-thin));
+    border: var(--rule-thin) solid var(--color-paper);
+    box-shadow:
+      inset 0 0 0 var(--button-ring) var(--color-oxblood),
+      inset 0 0 0 calc(var(--button-ring) + var(--rule-hair)) var(--color-paper);
+  }
+
+  /* Sized from the photo's ratio: as wide as fits both the width and 66% of the screen height. */
+  .lightbox-frame img {
+    --max-width: calc(
+      min(var(--lightbox-width), 100vw - 2 * var(--space-3xl)) - 2 *
+        (var(--space-2xs) + 2 * var(--rule-thin))
+    );
+
+    width: min(var(--max-width), 66vh * var(--ratio));
+    height: auto;
+    aspect-ratio: var(--ratio);
+    object-fit: cover;
+  }
+
+  .lightbox-caption {
+    flex: 1;
+    min-width: 0;
+    min-height: 1.35em;
+    font-family: var(--font-display);
+    font-size: var(--text-lead);
+    font-style: italic;
+    line-height: 1.35;
+  }
+
+  .lightbox-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+
+  .lightbox .counter {
+    min-width: 4rem;
+    text-align: center;
+  }
+
+  .lightbox .step {
+    background: transparent;
+    box-shadow:
+      inset 0 0 0 var(--rule-thick) var(--color-oxblood),
+      inset 0 0 0 calc(var(--rule-thick) + var(--rule-hair)) currentColor;
+    color: var(--color-paper);
+  }
+
+  .lightbox .step:hover:not(:disabled) {
+    background-color: var(--lightbox-hover);
+  }
+
+  .lightbox .step:disabled {
+    color: var(--color-rule-on-dark);
+  }
+
+  @media (width >= 1100px) {
+    .strip {
+      margin-inline: calc(-1 * var(--article-breakout));
+    }
+
+    .enlarge {
+      padding: calc(var(--space-2xs) - var(--rule-hair));
+    }
+
+    .item figcaption {
+      font-size: var(--text-body);
+    }
+  }
+
+  @media (width < 760px) {
+    .gallery {
+      margin-top: var(--space-3xl);
+    }
+
+    .strip {
+      --gap: var(--space-xs);
+      --item: var(--gallery-item-mobile);
+
+      margin: var(--space-s) calc(-1 * var(--space-gutter)) 0;
+      padding-inline: var(--space-gutter);
+      scroll-padding-inline: var(--space-gutter);
+    }
+
+    .enlarge {
+      padding: var(--space-3xs);
+    }
+
+    .controls:not([hidden]) {
+      justify-content: space-between;
+    }
+
+    .lightbox {
+      padding: var(--space-m);
+    }
+
+    .lightbox-inner {
+      gap: var(--space-xs);
+    }
+
+    .lightbox-frame {
+      padding: var(--space-2xs);
+    }
+
+    .lightbox-frame img {
+      --max-width: calc(
+        100vw - 2 * var(--space-m) - 2 * (var(--space-2xs) + var(--rule-thin))
+      );
+    }
+
+    .lightbox-foot {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-s);
+    }
+
+    .lightbox-controls {
+      justify-content: space-between;
+    }
+  }
+</style>

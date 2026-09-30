@@ -4,6 +4,9 @@
  * nouveau frame has a fixed top and base and stems that stretch, so it holds
  * a title of any length. No footer invitation here; the way back is a quiet
  * text link.
+ *
+ * Share links are plain links (no third-party scripts); "copy link" is added
+ * by src/scripts/post.ts when the browser can copy.
  */
 import Ornament from "../../components/Ornament.astro";
 import Photo from "../../components/Photo.astro";
@@ -11,7 +14,14 @@ import PostBody from "../../components/news/PostBody.astro";
 import { categories, news } from "../../data/news";
 import { routes, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { dateParts, getPosts, type Post } from "../../lib/news";
+import {
+  dateParts,
+  getPosts,
+  getRelatedPosts,
+  type Post,
+} from "../../lib/news";
+import PostGallery from "../../sections/news/PostGallery.astro";
+import RelatedPosts from "../../sections/news/RelatedPosts.astro";
 
 /** Titles longer than this (in characters) are set smaller. */
 const LONG_TITLE = 40;
@@ -32,6 +42,15 @@ const copy = news.post;
 const date = dateParts(post.date);
 const place = [post.venue, post.city].filter(Boolean).join(", ");
 const long = post.title.length > LONG_TITLE;
+const related = await getRelatedPosts(post);
+
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const share = {
+  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  email: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(`${post.excerpt}
+
+${url}`)}`,
+};
 ---
 
 <BaseLayout title={post.title} description={post.excerpt} footerCta={false}>
@@ -73,31 +92,58 @@ const long = post.title.length > LONG_TITLE;
       </div>
     )}
 
-    <article class="article">
-      {SHOW_PLACEHOLDER_TAGS && copy.placeholder && (
-        <p class="tag-row">
-          <span class="placeholder-tag">{site.placeholderTag}</span>
-        </p>
-      )}
-      <PostBody post={post} />
-    </article>
+    <div class="column">
+      <article class="article">
+        {SHOW_PLACEHOLDER_TAGS && copy.placeholder && (
+          <p class="tag-row">
+            <span class="placeholder-tag">{site.placeholderTag}</span>
+          </p>
+        )}
+        <PostBody post={post} />
+        {post.gallery.length > 0 && <PostGallery post={post} />}
 
-    <p class="back">
-      <a href={routes.news}>
-        <span aria-hidden="true">←</span>
-        {copy.back}
-      </a>
-    </p>
+        <div class="share">
+          <p class="share-label">{copy.share.label}</p>
+          <a href={share.facebook}>{copy.share.facebook}</a>
+          <button
+            type="button"
+            class="copy"
+            aria-live="polite"
+            hidden
+            data-copy
+            data-copied={copy.share.copied}
+          >
+            <svg viewBox="0 0 14 12" aria-hidden="true" focusable="false">
+              <path d="M1 6.5 5 10.5 13 1.5"></path>
+            </svg>
+            <span data-copy-text>{copy.share.copy}</span>
+          </button>
+          <a href={share.email}>{copy.share.email}</a>
+        </div>
+      </article>
+
+      {related.length > 0 && <RelatedPosts posts={related} />}
+
+      <p class="back">
+        <a href={routes.news}>
+          <span aria-hidden="true">←</span>
+          {copy.back}
+        </a>
+      </p>
+    </div>
   </div>
 </BaseLayout>
+
+<script>
+  import "../../scripts/post";
+</script>
 
 <style>
   .post {
     padding: var(--space-l) var(--space-gutter) var(--space-7xl);
   }
 
-  .crumbs,
-  .back {
+  .crumbs {
     max-width: var(--width-post);
     margin-inline: auto;
   }
@@ -248,12 +294,13 @@ const long = post.title.length > LONG_TITLE;
   }
 
   /* Body ------------------------------------------------------------------- */
-  .article {
+  /* Body column: the article, related posts and the way back. */
+  .column {
     max-width: var(--width-article);
     margin: var(--space-post) auto 0;
   }
 
-  .frame + .article {
+  .frame + .column {
     margin-top: var(--space-4xl);
   }
 
@@ -261,6 +308,72 @@ const long = post.title.length > LONG_TITLE;
     display: flex;
     justify-content: flex-end;
     margin-bottom: var(--space-xs);
+  }
+
+  /* Share row: plain links, and "copy link" when the browser can copy -------- */
+  .share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-l);
+    margin-top: var(--space-4xl);
+    padding-top: var(--space-2xs);
+    border-top: var(--rule-hair) solid var(--color-rule-soft);
+    color: var(--color-ink-muted);
+    font-size: var(--text-small);
+  }
+
+  .share-label {
+    font-style: italic;
+  }
+
+  .share a,
+  .copy {
+    display: flex;
+    align-items: center;
+    min-height: var(--size-touch);
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-thickness: var(--rule-hair);
+    text-underline-offset: var(--space-3xs);
+  }
+
+  .share a:hover,
+  .copy:hover {
+    color: var(--color-ink-red);
+  }
+
+  .copy {
+    gap: var(--space-2xs);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .copy[hidden] {
+    display: none;
+  }
+
+  .copy svg {
+    display: none;
+    width: 0.875rem;
+    height: 0.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+  }
+
+  .copy.is-copied {
+    color: var(--color-ink-red);
+    font-style: italic;
+    text-decoration: none;
+  }
+
+  .copy.is-copied svg {
+    display: block;
   }
 
   /* The way back: a quiet text link ------------------------------------------ */
@@ -328,8 +441,13 @@ const long = post.title.length > LONG_TITLE;
       padding: var(--space-2xs);
     }
 
-    .article,
-    .frame + .article {
+    .column,
+    .frame + .column {
+      margin-top: var(--space-2xl);
+    }
+
+    .share {
+      gap: 0 var(--space-m);
       margin-top: var(--space-2xl);
     }
 

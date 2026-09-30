@@ -289,7 +289,7 @@
   /* ------------------------------------------------------------------------
      Post page (/nea/<slug>)
      ------------------------------------------------------------------------ */
-  --width-post: 68.75rem; /* 1100, title frame, cover, related posts */
+  --width-post: 68.75rem; /* 1100, title frame and cover */
   --width-article: 42.5rem; /* 680, body measure */
   --article-breakout: 3.75rem; /* 60, body photos reach past the measure on each side (desktop) */
   --space-post: clamp(
@@ -306,6 +306,27 @@
   --frame-inner:
     inset 0 0 0 var(--rule-thick) var(--color-paper),
     inset 0 0 0 calc(var(--rule-thick) + var(--rule-hair)) var(--color-ink-red);
+
+  /* Gallery strip: each photo's share of the strip; the next one peeks in. */
+  --gallery-item: 80%;
+  --gallery-item-mobile: 86%;
+  /* Enlarged photo view: oxblood over the page. */
+  --lightbox-backdrop: color-mix(
+    in srgb,
+    var(--color-oxblood) 97%,
+    transparent
+  );
+  --lightbox-hover: color-mix(
+    in srgb,
+    var(--color-paper) 10%,
+    var(--color-oxblood)
+  );
+  --lightbox-width: 62.5rem; /* 1000 */
+  --text-related-day: clamp(
+    2.25rem,
+    2.064rem + 0.762vw,
+    2.75rem
+  ); /* 36 → 44, related posts date */
 
   /* ------------------------------------------------------------------------
      Motion
