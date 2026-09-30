@@ -1,0 +1,39 @@
+[
+  {
+    "id": "o-vasilias-me-ta-aytia-toy-gaidaroy",
+    "title": "Ο βασιλιάς με τα αυτιά του γαϊδάρου",
+    "date": "2026-10-18",
+    "time": "11:00",
+    "venue": "Δημοτική Βιβλιοθήκη Καλαμαριάς",
+    "city": "Θεσσαλονίκη",
+    "audience": "για όλη την οικογένεια",
+    "link": "https://www.example.com/"
+  },
+  {
+    "id": "mythoi-toy-vorra",
+    "title": "Μύθοι του Βορρά",
+    "date": "2026-11-07",
+    "time": "20:30",
+    "venue": "Καφέ Ελιά",
+    "city": "Θεσσαλονίκη",
+    "audience": "από 12 ετών και πάνω",
+    "link": "https://www.example.com/"
+  },
+  {
+    "id": "paramythia-apo-ti-mana-gi-volos",
+    "title": "Παραμύθια από τη Μάνα Γη",
+    "date": "2026-11-22",
+    "venue": "Πολιτιστικό Κέντρο Δήμου Βόλου",
+    "city": "Βόλος",
+    "audience": "για όλη την οικογένεια"
+  },
+  {
+    "id": "kalokairina-paramythia-sto-limani",
+    "title": "Καλοκαιρινά παραμύθια στο λιμάνι",
+    "date": "2026-08-30",
+    "time": "19:00",
+    "venue": "Προβλήτα Α, Λιμάνι Θεσσαλονίκης",
+    "city": "Θεσσαλονίκη",
+    "audience": "για όλη την οικογένεια"
+  }
+]

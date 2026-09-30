@@ -39,7 +39,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 
 ## Content
 
-- One data file per page: homepage and shared copy (header, footer, routes, flags) live in `src/data/site.ts`; every other page has its own file in `src/data/` (`team.ts` for `/omada`). No copy is hardcoded in components.
+- One data file per page: homepage and shared copy (header, footer, routes, flags) live in `src/data/site.ts`; every other page has its own file in `src/data/` (`team.ts` for `/omada`, `invite.ts` for `/proskaleste-mas`, `news.ts` for `/nea` and the post pages). No copy is hardcoded in components. Posts and events are content, not copy: see "News and events" below.
 - Never use em dashes (—) in any copy. ESLint fails on them.
 - Greek labels are stored in normal case and uppercased with CSS (`text-transform: uppercase` under `lang="el"` drops the tonos and keeps the diaeresis).
 - Page routes are defined in `site.ts`: `/omada`, `/nea`, `/proskaleste-mas`. "Επικοινωνία" and "Προσκαλέστε μας" both point to `/proskaleste-mas`.
@@ -127,6 +127,43 @@ The tree above, beside and below the letter form is **not** an inline ornament. 
 - Spam: the Web3Forms honeypot `botcheck`, a checkbox hidden with `display: none` (not reachable by keyboard or screen readers).
 - **Trying the states without a key (dev only):** run `npm run dev` and open `/proskaleste-mas/?simulate=success` or `/proskaleste-mas/?simulate=failure`, fill in name and email and press "Αποστολή": the sending state shows for 1.6 s, then success or failure. The check sits behind `import.meta.env.DEV`, so it is removed from production builds (verify: the built page contains no `simulate`). Without the parameter and without a key, dev shows the "form not configured" message. The thank-you panel without JavaScript can be seen at `/proskaleste-mas/#letter-sent`.
 
+## News and events (/nea)
+
+Posts and events will come from Sanity once all external connections are set up. Until then they are placeholder content in Astro content collections, with fields shaped like the planned Sanity schema so nothing is rewritten later.
+
+### Content model
+
+- **Post** (`src/content.config.ts`, collection `news`): `title`, `slug` (latin, written explicitly, never generated from the Greek title), `date`, `category` (`nea` = Νέα, `afigiseis` = Από τις αφηγήσεις μας, `typos` = Στον Τύπο), `excerpt`, optional `cover`, optional `gallery`, optional `venue` and `city` (event reports), and the body (rich text).
+- **Image** (cover and gallery items): `image` (the file), `alt` (required) and optional `caption`. This matches a Sanity image with alt and caption fields. While `image` is left out, a placeholder is shown, using `alt` as its hint.
+- **Event** (collection `events`): `title`, `date` (YYYY-MM-DD), optional `time` (HH:MM; "η ώρα θα ανακοινωθεί" is shown without it), `venue`, `city`, `audience` (one short line), optional `link`.
+- Slugs must be latin lowercase with hyphens, and `selida` and `kategoria` are reserved (they are listing URLs). The build stops with a clear message otherwise.
+- Category labels, their URL segments, the page size (`POSTS_PER_PAGE`) and all page copy live in `src/data/news.ts`.
+
+### Adding a post by hand (until Sanity)
+
+1. Create a folder named after the slug: `src/content/news/<slug>/`.
+2. In it, create `index.md` with the frontmatter fields above (copy an existing post as a starting point) and the text below the frontmatter in Markdown: paragraphs, `## ` subheadings, `> ` quotes, `- ` lists.
+3. Put the post's photos in the same folder and refer to them relatively:
+   - cover or gallery item: `image: ./cover.jpg` with its `alt` (and `caption` if wanted);
+   - a photo inside the text: `![alt text](./photo.jpg "caption")`.
+4. Run `npm run build`; a missing field, a bad slug or a missing photo stops the build with the reason.
+
+Adding an event: add an entry to `src/content/events.json` with a unique `id` (latin, like a slug).
+
+### Data layer
+
+- `src/lib/news.ts` is the only code that reads the collections. Pages use its functions (`getPosts`, `getPostBySlug`, `getRelatedPosts`, `getUpcomingEvents`, `getListingPage`, `getListingPaths`, `groupByYear`, `dateParts`) and its types (`Post`, `NewsEvent`, `NewsImage`), which do not depend on the source.
+- The post body is rendered in one place only: `src/components/news/PostBody.astro`, through `loadPostBody()`.
+- "Upcoming" events are those dated today or later in Athens time, decided **at build time**. The site therefore needs a daily rebuild (see the pre-launch checklist); without it a past event would stay on the board until the next deploy.
+
+### Switching to Sanity
+
+1. Create the Sanity schema with the same fields as above (post, image with alt and caption, event).
+2. In `src/lib/news.ts`, reimplement the functions marked SOURCE (`loadPosts`, `loadEvents`, `loadPostBody`) with Sanity queries that return the same `Post` and `NewsEvent` objects. Images become Sanity CDN URLs with `width` and `height` in `NewsImage`.
+3. In `PostBody.astro`, render Portable Text instead of the Markdown content.
+4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`.
+5. Pages and the other components stay as they are.
+
 ## SEO and launch
 
 - `site` in `astro.config.mjs` comes from `contact.siteUrl`. Canonical URLs, Open Graph URLs, the sitemap and robots.txt are all built from it.
@@ -161,6 +198,7 @@ Note: `Disallow: /` stops crawling, which also means crawlers never read the `no
 7. **LAUNCHED on:** set `LAUNCHED = true` in `site.ts`.
 8. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger).
 9. Test the red thread and the storytellers sequence on a real mid-range phone.
+10. **Daily rebuild** (so past events leave the "upcoming" board): in the host's settings, create a deploy hook (a secret URL that starts a new build), then schedule a daily request to it shortly after midnight Athens time, for example with the host's scheduled functions, a GitHub Actions `schedule` workflow or a cron service. Check the next day that a build ran. Once Sanity is connected, also trigger the same hook from Sanity's webhook on publish.
 
 ## How to change fonts
 
