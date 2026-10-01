@@ -7,7 +7,8 @@
     "venue": "Δημοτική Βιβλιοθήκη Καλαμαριάς",
     "city": "Θεσσαλονίκη",
     "audience": "για όλη την οικογένεια",
-    "link": "https://www.example.com/"
+    "link": "https://www.example.com/",
+    "sample": true
   },
   {
     "id": "mythoi-toy-vorra",
@@ -17,7 +18,8 @@
     "venue": "Καφέ Ελιά",
     "city": "Θεσσαλονίκη",
     "audience": "από 12 ετών και πάνω",
-    "link": "https://www.example.com/"
+    "link": "https://www.example.com/",
+    "sample": true
   },
   {
     "id": "paramythia-apo-ti-mana-gi-volos",
@@ -25,7 +27,8 @@
     "date": "2026-11-22",
     "venue": "Πολιτιστικό Κέντρο Δήμου Βόλου",
     "city": "Βόλος",
-    "audience": "για όλη την οικογένεια"
+    "audience": "για όλη την οικογένεια",
+    "sample": true
   },
   {
     "id": "kalokairina-paramythia-sto-limani",
@@ -34,6 +37,7 @@
     "time": "19:00",
     "venue": "Προβλήτα Α, Λιμάνι Θεσσαλονίκης",
     "city": "Θεσσαλονίκη",
-    "audience": "για όλη την οικογένεια"
+    "audience": "για όλη την οικογένεια",
+    "sample": true
   }
 ]

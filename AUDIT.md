@@ -43,13 +43,20 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 >   - CLS 0 to 0.001 on the homepage, `/proskaleste-mas`, `/nea` and a post.
 >   - Lighthouse mobile: `/omada` CLS 0.169 → 0, performance 88 → 94; homepage CLS 0, performance 93. Desktop: 100 and 99.
 >   - Sequence behaviour, the short-screen fallback, resizing, reduced motion and no-JavaScript checks unchanged.
->   - The Noto Serif (Android) values are computed, not device-tested; added to checklist item 9.
+>   - The Noto Serif (Android) values are computed, not device-tested; added to checklist item 10.
 
 - Where: `src/scripts/storytellers.ts:93` (`.is-sequence` is added after the first paint).
 - Why: the stacked list paints first and then turns into the pinned frame, which moves everything below it. 0.17 is in the "needs improvement" range.
 - Fix: decide the mode before the first paint, with a few lines of inline script right after the section that add the class synchronously. Keep the existing fallback rules.
 
 **M3. The pre-launch checklist does not cover the sample news content** [Documentation]
+
+> **Fixed.**
+>
+> - **Marked:** all 12 sample posts and 4 sample events now carry `sample: true` (new optional field in `src/content.config.ts`).
+> - **Guarded:** with `LAUNCHED = true` the build stops in the data layer (`refuseSamples` in `src/lib/news.ts`) and lists every sample post by slug and event by id, with what to do. Tested: real build with `LAUNCHED = true` → exit code 1 naming the 12 posts. On a copy without the posts → exit code 1 naming the 4 events. On a copy with no samples → build passes, `/nea` shows both empty states, no robots meta.
+> - **Tag:** the post page tag now comes from each post's `sample` field instead of the global `news.post.placeholder` switch (removed), so real posts never show it.
+> - **Checklist:** new item 6 (sample news). Item 4 now names the favicon and touch icon, and item 5 the placeholder copy in `news.ts` and `not-found.ts`. Partner logos stay in item 5 and get their code in S7.
 
 - Where: `CLAUDE.md:253-255` (checklist items 4 and 5).
 - Why: `src/content/news` holds 12 sample posts and `src/content/events.json` 4 sample events. They describe things that did not happen: an article in «Καθημερινή», an interview on ΕΡΤ, a programme with the Ministry, three nights at the Pelion festival. Two event links point to `example.com`. The checklist never says to remove them, so they could go live as real news. It also misses:
@@ -149,7 +156,7 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **N10. Sitemap without dates.** Adding `lastmod` (post date) for posts through the sitemap `serialize` option helps crawlers. Small.
 
-**N11. Main-thread work on the homepage.** "Style & Layout" takes 1.3 s under Lighthouse's 4× CPU slowdown, mostly the hand-printed SVG filter on many ornaments and the long thread path. There are also forced reflows of about 250 ms at start-up in `red-thread.ts` and `post.ts`. Check on a real mid-range phone (already checklist item 9) before changing anything.
+**N11. Main-thread work on the homepage.** "Style & Layout" takes 1.3 s under Lighthouse's 4× CPU slowdown, mostly the hand-printed SVG filter on many ornaments and the long thread path. There are also forced reflows of about 250 ms at start-up in `red-thread.ts` and `post.ts`. Check on a real mid-range phone (already checklist item 10) before changing anything.
 
 **N12. Lighthouse "label-content-name-mismatch" on the post gallery.** It is caused only by the placeholder caption ("Φωτογραφία · …") inside the photo link, and goes away when real photos replace the placeholders. No action.
 
@@ -274,7 +281,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
 - Postal address (now "Οδός Παραδείγματος 1, 546 00"). It is not shown on the page, only in the structured data for search engines. Ask whether they want it public at all.
 - City (Θεσσαλονίκη). It is also used in the homepage kicker "Αφήγηση παραμυθιών · Θεσσαλονίκη".
 - Facebook and Instagram page URLs (now the bare sites). Any other networks?
-- The old Blogspot blog address, and which old posts are most visited (checklist item 11).
+- The old Blogspot blog address, and which old posts are most visited (checklist item 12).
 
 ### Logo and icons
 
@@ -363,7 +370,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
   - a one-line audience ("για όλη την οικογένεια");
   - an optional link.
 
-  The weekday is computed automatically. Past events disappear on the next build (daily rebuild, checklist item 10).
+  The weekday is computed automatically. Past events disappear on the next build (daily rebuild, checklist item 11).
 
 - **Posts:** the **12 sample posts must be deleted or replaced** (flagged by `news.post.placeholder`):
   - Νέα σεζόν αφηγήσεων στις βιβλιοθήκες

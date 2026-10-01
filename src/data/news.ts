@@ -69,8 +69,6 @@ export const news = {
 
   /** A post page (/nea/<slug>). */
   post: {
-    /** The sample posts in src/content/news are placeholders. */
-    placeholder: true,
     breadcrumbLabel: "Διαδρομή",
     back: "Πίσω στο χρονικό",
 

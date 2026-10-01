@@ -11,7 +11,7 @@
 import type { ImageMetadata } from "astro";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import { categories, POSTS_PER_PAGE } from "../data/news";
-import { routes } from "../data/site";
+import { LAUNCHED, routes } from "../data/site";
 
 /* ==========================================================================
    Types (source-independent)
@@ -45,6 +45,8 @@ export interface Post {
   gallery: NewsImage[];
   venue?: string;
   city?: string;
+  /** Invented placeholder content: shows the placeholder tag. */
+  sample: boolean;
 }
 
 export interface NewsEvent {
@@ -92,18 +94,44 @@ function toPost(entry: PostEntry): Post {
     gallery: data.gallery.map(toImage),
     venue: data.venue,
     city: data.city,
+    sample: data.sample,
   };
+}
+
+/**
+ * Sample content must never go live: with LAUNCHED = true the build stops
+ * here, naming every sample post or event that is still in src/content.
+ */
+function refuseSamples(kind: string, where: string, names: string[]) {
+  if (!LAUNCHED || names.length === 0) return;
+  throw new Error(
+    [
+      `LAUNCHED is true, but ${String(names.length)} sample ${kind} (sample: true) are still in ${where}:`,
+      ...names.map((name) => `  ${name}`),
+      "Delete or replace them before launch (pre-launch checklist in CLAUDE.md), or set LAUNCHED back to false in src/data/site.ts.",
+    ].join("\n"),
+  );
 }
 
 /** SOURCE: every post, newest first. */
 async function loadPosts(): Promise<Post[]> {
   const entries = await getCollection("news");
+  refuseSamples(
+    "posts",
+    "src/content/news",
+    entries.filter((e) => e.data.sample).map((e) => e.data.slug),
+  );
   return entries.map(toPost).sort((a, b) => b.date.localeCompare(a.date));
 }
 
 /** SOURCE: every event, in date order. */
 async function loadEvents(): Promise<NewsEvent[]> {
   const entries = await getCollection("events");
+  refuseSamples(
+    "events",
+    "src/content/events.json",
+    entries.filter((e) => e.data.sample).map((e) => e.id),
+  );
   return entries
     .map(({ id, data }) => ({ id, ...data }))
     .sort((a, b) =>

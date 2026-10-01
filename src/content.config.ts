@@ -8,11 +8,18 @@
  *
  * Posts:  src/content/news/<slug>/index.md, with the post's images beside it.
  * Events: src/content/events.json.
+ *
+ * `sample: true` marks the invented placeholder posts and events. They show
+ * the placeholder tag, and with LAUNCHED = true the build refuses to run
+ * while any are left (see src/lib/news.ts). Real content leaves it out.
  */
 import { defineCollection, type SchemaContext } from "astro:content";
 import { file, glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { categories } from "./data/news";
+
+/** Invented placeholder content, to be deleted before launch. */
+const sample = z.boolean().default(false);
 
 /** Slugs used by the listing's own URLs (/nea/selida/2, /nea/kategoria/...). */
 export const RESERVED_SLUGS = ["selida", "kategoria"];
@@ -59,6 +66,7 @@ const news = defineCollection({
       /** Event reports: where the storytelling took place. */
       venue: z.string().optional(),
       city: z.string().optional(),
+      sample,
     }),
 });
 
@@ -78,6 +86,7 @@ const events = defineCollection({
     /** Who it is for, one short line ("για όλη την οικογένεια"). */
     audience: z.string().min(1),
     link: z.url().optional(),
+    sample,
   }),
 });
 

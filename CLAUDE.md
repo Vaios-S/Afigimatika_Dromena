@@ -138,9 +138,10 @@ Posts and events will come from Sanity once all external connections are set up.
 
 ### Content model
 
-- **Post** (`src/content.config.ts`, collection `news`): `title`, `slug` (latin, written explicitly, never generated from the Greek title), `date`, `category` (`nea` = Νέα, `afigiseis` = Από τις αφηγήσεις μας, `typos` = Στον Τύπο), `excerpt`, optional `cover`, optional `gallery`, optional `venue` and `city` (event reports), and the body (rich text).
+- **Post** (`src/content.config.ts`, collection `news`): `title`, `slug` (latin, written explicitly, never generated from the Greek title), `date`, `category` (`nea` = Νέα, `afigiseis` = Από τις αφηγήσεις μας, `typos` = Στον Τύπο), `excerpt`, optional `cover`, optional `gallery`, optional `venue` and `city` (event reports), optional `sample` (see below), and the body (rich text).
 - **Image** (cover and gallery items): `image` (the file), `alt` (required) and optional `caption`. This matches a Sanity image with alt and caption fields. While `image` is left out, a placeholder is shown, using `alt` as its hint.
-- **Event** (collection `events`): `title`, `date` (YYYY-MM-DD), optional `time` (HH:MM; "η ώρα θα ανακοινωθεί" is shown without it), `venue`, `city`, `audience` (one short line), optional `link`.
+- **Event** (collection `events`): `title`, `date` (YYYY-MM-DD), optional `time` (HH:MM; "η ώρα θα ανακοινωθεί" is shown without it), `venue`, `city`, `audience` (one short line), optional `link`, optional `sample`.
+- **Sample content:** the invented placeholder posts and events carry `sample: true`. Sample posts show the ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ tag on their page. With `LAUNCHED = true` the build **stops** while any sample post or event is left, listing each by slug or id, so invented news can never go live. Real posts and events leave the field out. The check is in the SOURCE loaders of `src/lib/news.ts`. When the last post or event is deleted, Astro warns that the collection is empty; that warning is harmless, and the pages show their empty states.
 - Slugs must be latin lowercase with hyphens, and `selida` and `kategoria` are reserved (they are listing URLs). The build stops with a clear message otherwise.
 - Category labels, their URL segments, the page size (`POSTS_PER_PAGE`) and all page copy live in `src/data/news.ts`.
 
@@ -204,14 +205,14 @@ All listing pages are real static pages, so the filter and the pagination work w
 - **Share row**: Facebook and email are plain links built from the page's canonical URL (so they use the real domain only once `siteUrl` is set). "Αντιγραφή συνδέσμου" appears only when the browser can copy (HTTPS or localhost), copies the address the visitor is on, and shows "Αντιγράφηκε" for `COPIED_TIME` (top of `post.ts`). No third-party scripts.
 - **Related posts** (`src/sections/news/RelatedPosts.astro`): up to three, same category first, then the most recent (`getRelatedPosts`). Thumbnails only for posts with a cover.
 - The frame is a fixed top and base with stems that stretch to the height of the title, so it holds any title length. Titles longer than `LONG_TITLE` characters (a constant at the top of the page) are set smaller.
-- The "ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ" tag on posts is `news.post.placeholder` in `src/data/news.ts`; set it to `false` when the sample posts are replaced by real ones.
+- The "ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ" tag shows on posts marked `sample: true` (and only while `SHOW_PLACEHOLDER_TAGS` is on).
 
 ### Switching to Sanity
 
 1. Create the Sanity schema with the same fields as above (post, image with alt and caption, event).
 2. In `src/lib/news.ts`, reimplement the functions marked SOURCE (`loadPosts`, `loadEvents`, `loadPostBody`) with Sanity queries that return the same `Post` and `NewsEvent` objects. Images become Sanity CDN URLs with `width` and `height` in `NewsImage`. `Photo.astro` already renders a remote URL (it needs `width` and `height`); add `cdn.sanity.io` to `image.domains` in `astro.config.mjs` so Astro optimizes those images.
 3. In `PostBody.astro`, render Portable Text instead of the Markdown content, with the same markup `post-markdown.ts` produces today (drop cap spans, `figure`/`figcaption`, `figure.quote`), so the styles keep working. Then remove the plugin from `astro.config.mjs`.
-4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`.
+4. Delete `src/content/news`, `src/content/events.json` and the collections in `src/content.config.ts`. Sanity holds no sample content, so the sample check (`refuseSamples` in `news.ts`) can go too.
 5. Pages and the other components stay as they are.
 
 ## 404 page
@@ -252,14 +253,15 @@ Note: `Disallow: /` stops crawling, which also means crawlers never read the `no
    6. In the group's inbox check: the subject reads "Πρόσκληση: {name}, {place}" with the real values; the fields appear with their Greek names (Φορέας, Πόλη, Κοινό, Πότε, Μήνυμα, Τηλέφωνο); replying goes to the sender's email.
    7. Check the spam folder. If the test landed there, mark it "not spam" and add the Web3Forms sender to the contacts.
    8. Test once with JavaScript turned off in the browser: after sending, the page must come back with the thank-you panel (this uses the redirect built from `siteUrl`, so it only works on the real domain).
-4. **Images:** replace every placeholder in `src/data/images.ts` (the milestone photos, the portraits and `ogImage`), with alt text written for the real images.
-5. **Copy:** replace the provisional milestone, testimonial and partner texts in `site.ts`, the texts marked `placeholder` in `team.ts` and `invite.ts` (including every FAQ answer, which must be confirmed with the group), and add partner logos.
-6. **Placeholder tags off:** set `SHOW_PLACEHOLDER_TAGS = false` in `site.ts`.
-7. **LAUNCHED on:** set `LAUNCHED = true` in `site.ts`.
-8. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger) of the homepage and of a post with a cover. Check the structured data of a post and of `/nea` (with upcoming events) with Google's Rich Results Test (search.google.com/test/rich-results).
-9. Test the red thread and the storytellers sequence on a real mid-range phone. On an Android phone, also check that text does not jump when the fonts load: the Noto Serif fallback values were computed from the font files but could not be tested on a device.
-10. **Daily rebuild** (so past events leave the "upcoming" board): in the host's settings, create a deploy hook (a secret URL that starts a new build), then schedule a daily request to it shortly after midnight Athens time, for example with the host's scheduled functions, a GitHub Actions `schedule` workflow or a cron service. Check the next day that a build ran. Once Sanity is connected, also trigger the same hook from Sanity's webhook on publish.
-11. **The old Blogspot blog:** its post URLs will stop existing once the posts move here. Before launch decide:
+4. **Images:** replace every placeholder in `src/data/images.ts` (the milestone photos, the portraits and `ogImage`), with alt text written for the real images. If the group has its own logo, replace `public/favicon.svg` and `public/apple-touch-icon.png` (180×180) too.
+5. **Copy:** replace the provisional milestone, testimonial and partner texts in `site.ts`; the texts marked `placeholder` in `team.ts`, `invite.ts` (including every FAQ answer, which must be confirmed with the group), `news.ts` (the `/nea` intro and the events board title) and `not-found.ts`; and add partner logos.
+6. **Sample news:** delete every post and event marked `sample: true` (the 12 posts in `src/content/news` and the 4 events in `src/content/events.json`) and add the real ones, or switch to Sanity. The invented posts describe things that did not happen (an article in «Καθημερινή», an interview on ΕΡΤ, festival nights), so none may go live; the build refuses to run with `LAUNCHED = true` while any are left. The site works with no posts or events at all (empty states).
+7. **Placeholder tags off:** set `SHOW_PLACEHOLDER_TAGS = false` in `site.ts`.
+8. **LAUNCHED on:** set `LAUNCHED = true` in `site.ts`.
+9. Run `npm run build` and `npm run lint`, then check `dist/robots.txt`, the page `<head>` and a share preview (for example with the Facebook Sharing Debugger) of the homepage and of a post with a cover. Check the structured data of a post and of `/nea` (with upcoming events) with Google's Rich Results Test (search.google.com/test/rich-results).
+10. Test the red thread and the storytellers sequence on a real mid-range phone. On an Android phone, also check that text does not jump when the fonts load: the Noto Serif fallback values were computed from the font files but could not be tested on a device.
+11. **Daily rebuild** (so past events leave the "upcoming" board): in the host's settings, create a deploy hook (a secret URL that starts a new build), then schedule a daily request to it shortly after midnight Athens time, for example with the host's scheduled functions, a GitHub Actions `schedule` workflow or a cron service. Check the next day that a build ran. Once Sanity is connected, also trigger the same hook from Sanity's webhook on publish.
+12. **The old Blogspot blog:** its post URLs will stop existing once the posts move here. Before launch decide:
     1. whether the old blog address sends visitors to the new site. Blogger's own "custom redirects" only work between addresses inside the blog, so check the current options when deciding; common approaches are moving the blog's custom domain (if it has one) to the new host, a redirect in the Blogger theme, or a notice with a link on the old blog; and
     2. whether the most visited old posts that get migrated get redirects from their old paths to their new `/nea/<slug>` addresses (for example a `_redirects` file on the host, which works when the old blog's domain points to the new site). Check which old posts are visited most (Blogger stats or Search Console) and list old URL and new slug side by side.
 
