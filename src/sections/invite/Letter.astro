@@ -469,11 +469,16 @@ const tree = [
     color: var(--color-ink-red);
   }
 
-  /* Focus: the blank turns shaded and gets a second red rule under it. */
+  /* Focus: the field turns shaded; a blank gets a second red rule under it, the ruled message field the site's focus ring. */
   input:focus,
   textarea:focus {
     outline: none;
     background-color: var(--color-paper-shade);
+  }
+
+  .message textarea:focus {
+    outline: var(--focus-width) solid var(--color-focus);
+    outline-offset: var(--focus-offset);
   }
 
   .blank input:focus {

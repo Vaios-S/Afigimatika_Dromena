@@ -71,11 +71,18 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **S1. Message field: focus is almost invisible**
 
+> **Fixed.** The message field now gets the site's focus ring (2px red outline, offset 3px) when focused. Its width and offset are new tokens (`--focus-width`, `--focus-offset`), also used by the global `:focus-visible` rule. While checking, it turned out the field's own transparent background overrode the focus shading, so before this fix it had no visible focus mark at all. Checked in Chrome and WebKit at 1440 and 390px.
+
 - Where: `src/sections/invite/Letter.astro:473-476`.
 - Why: the outline is removed. The one-line blanks get a second red rule, but the large textarea only turns from paper to shaded paper (about 1.07:1), which keyboard users can barely see (WCAG 2.4.7).
 - Fix: give the textarea a visible focus mark: the same red rule along its bottom, or the site's 2px red outline.
 
 **S2. Long unbroken words and pasted URLs overflow the page**
+
+> **Fixed.**
+>
+> - **Where:** `overflow-wrap: anywhere` on the post body, the post title, chronicle titles and excerpts, related-post titles, and event titles and venues. The browser breaks a word only when it would otherwise overflow; unlike `break-word`, this also works inside flex and grid items such as the post title.
+> - **Tested** on a copy with a 70-character word in a title, an event title and a venue, a long URL in a post body and in an excerpt, and a single-photo gallery: 0 overflow problems on 22 pages × 7 widths in Chrome and WebKit (37 per engine before).
 
 - Where:
   - post body links: `src/components/news/PostBody.astro:36`;
@@ -85,6 +92,8 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 - Fix: `overflow-wrap: anywhere` on post body text and on post titles (plus `min-width: 0` on the title's flex item).
 
 **S3. Five listing pages share one meta description**
+
+> **Fixed.** Each category has its own `description` in `news.ts` (113 to 134 characters), and from page 2 on "Σελίδα N." is added (`news.meta.pageDescription`). The SEO check now finds no duplicate titles or descriptions on any page.
 
 - Where: `src/pages/nea/[...listing].astro:45` uses `news.meta.description` for every category and page.
 - Why: `/nea`, the three category pages and `/nea/selida/2` have identical descriptions, so search engines see them as near-duplicates.
@@ -361,6 +370,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
 ### /nea (`src/data/news.ts`, `src/content/`)
 
 - **Intro** (flagged): the paragraph under "Ό,τι ειπώθηκε και ό,τι έρχεται".
+- **Search descriptions of the category pages** (confirm): Νέα, Από τις αφηγήσεις μας, Στον Τύπο. One sentence each, written by us, in `categories` in `news.ts`.
 - **Events board** (flagged title "Στον πίνακα ανακοινώσεων"). The **4 sample events must be deleted** and real ones added. Each event needs:
   - title;
   - date;

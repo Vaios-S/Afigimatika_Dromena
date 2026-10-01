@@ -40,9 +40,17 @@ const title =
   page > 1
     ? `${base}, ${news.meta.pageTitle.replace("{page}", String(page))}`
     : base;
+// Unique per page: the category's own description, plus the page number from page 2 on.
+const baseDescription = category
+  ? categories[category].description
+  : news.meta.description;
+const description =
+  page > 1
+    ? `${baseDescription} ${news.meta.pageDescription.replace("{page}", String(page))}`
+    : baseDescription;
 ---
 
-<BaseLayout title={title} description={news.meta.description}>
+<BaseLayout title={title} description={description}>
   <Intro />
   <Chronicle listing={listing} />
 </BaseLayout>

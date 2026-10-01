@@ -143,7 +143,7 @@ Posts and events will come from Sanity once all external connections are set up.
 - **Event** (collection `events`): `title`, `date` (YYYY-MM-DD), optional `time` (HH:MM; "η ώρα θα ανακοινωθεί" is shown without it), `venue`, `city`, `audience` (one short line), optional `link`, optional `sample`.
 - **Sample content:** the invented placeholder posts and events carry `sample: true`. Sample posts show the ΠΡΟΣΩΡΙΝΟ ΚΕΙΜΕΝΟ tag on their page. With `LAUNCHED = true` the build **stops** while any sample post or event is left, listing each by slug or id, so invented news can never go live. Real posts and events leave the field out. The check is in the SOURCE loaders of `src/lib/news.ts`. When the last post or event is deleted, Astro warns that the collection is empty; that warning is harmless, and the pages show their empty states.
 - Slugs must be latin lowercase with hyphens, and `selida` and `kategoria` are reserved (they are listing URLs). The build stops with a clear message otherwise.
-- Category labels, their URL segments, the page size (`POSTS_PER_PAGE`) and all page copy live in `src/data/news.ts`.
+- Category labels, their URL segments, each category listing's meta description, the page size (`POSTS_PER_PAGE`) and all page copy live in `src/data/news.ts`. Every listing page has its own description: the category's, plus "Σελίδα N." from page 2 on.
 
 ### Adding a post by hand (until Sanity)
 

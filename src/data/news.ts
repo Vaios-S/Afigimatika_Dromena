@@ -10,13 +10,29 @@ import { routes } from "./site";
 export const POSTS_PER_PAGE = 10;
 
 /**
- * Categories: the stored value (as in the content), the label and the latin
- * URL segment of its listing (/nea/kategoria/<path>).
+ * Categories: the stored value (as in the content), the label, the latin
+ * URL segment of its listing (/nea/kategoria/<path>) and the description of
+ * that listing for search results (under about 155 characters).
  */
 export const categories = {
-  nea: { label: "Νέα", path: "nea" },
-  afigiseis: { label: "Από τις αφηγήσεις μας", path: "apo-tis-afigiseis-mas" },
-  typos: { label: "Στον Τύπο", path: "ston-typo" },
+  nea: {
+    label: "Νέα",
+    path: "nea",
+    description:
+      "Τα νέα των Αφηγηματικών Δρώμενων: νέα προγράμματα, συνεργασίες και ό,τι καινούργιο ετοιμάζουμε για μικρούς και μεγάλους ακροατές.",
+  },
+  afigiseis: {
+    label: "Από τις αφηγήσεις μας",
+    path: "apo-tis-afigiseis-mas",
+    description:
+      "Από τις αφηγήσεις μας: σχολεία, βιβλιοθήκες, πλατείες και φεστιβάλ όπου είπαμε παραμύθια, με φωτογραφίες και ιστορίες από κάθε βραδιά.",
+  },
+  typos: {
+    label: "Στον Τύπο",
+    path: "ston-typo",
+    description:
+      "Στον Τύπο: άρθρα, συνεντεύξεις και εκπομπές για τα Αφηγηματικά Δρώμενα και για την τέχνη της προφορικής αφήγησης.",
+  },
 } as const;
 
 export const news = {
@@ -28,6 +44,8 @@ export const news = {
     categoryTitle: "{category} · Νέα & Εκδηλώσεις",
     /** Added to the title from page 2 on; {page} is filled in. */
     pageTitle: "σελίδα {page}",
+    /** Added to the description from page 2 on, so every page's is unique. */
+    pageDescription: "Σελίδα {page}.",
   },
 
   intro: {

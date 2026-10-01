@@ -23,7 +23,9 @@ const Content = await loadPostBody(Astro.props.post);
 </div>
 
 <style>
+  /* Long words and pasted URLs wrap instead of overflowing the page. */
   .post-body {
+    overflow-wrap: anywhere;
     display: flow-root;
     font-size: var(--text-article);
     line-height: var(--leading-article);
@@ -246,7 +248,9 @@ const Content = await loadPostBody(Astro.props.post);
   }
 
   @media (width < 760px) {
+    /* Long words and pasted URLs wrap instead of overflowing the page. */
     .post-body {
+      overflow-wrap: anywhere;
       line-height: var(--leading-article-mobile);
     }
 
