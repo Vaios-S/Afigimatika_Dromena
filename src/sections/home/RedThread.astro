@@ -9,9 +9,44 @@
 import Ornament from "../../components/Ornament.astro";
 import Photo from "../../components/Photo.astro";
 import { redThread, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
+import { FIBRE_WIDTH, TICK_WIDTH } from "../../lib/thread";
 ---
 
 <section class="red-thread" aria-labelledby="red-thread-title" data-red-thread>
+  <!-- The thread's box and the bow are in the page from the first paint, sized by CSS; the script only fills in the paths and moves them with transforms, so drawing never shifts the layout. -->
+  <div class="thread" aria-hidden="true" data-thread>
+    <svg class="thread-svg" focusable="false">
+      <path class="thread-line thread-core"></path>
+      <path class="thread-twist" stroke-width={TICK_WIDTH}></path>
+      <path class="thread-line" stroke-width={FIBRE_WIDTH}></path>
+      <path class="thread-fill"></path>
+    </svg>
+  </div>
+  <svg
+    class="thread-bow"
+    viewBox="-50 -26 100 70"
+    aria-hidden="true"
+    focusable="false"
+    data-thread-bow
+  >
+    <path
+      class="thread-line"
+      stroke-width="4"
+      d="M0 0C-12-18-40-22-44-6-47 8-20 8 0 0ZM0 0C12-18 40-22 44-6 47 8 20 8 0 0Z"
+    ></path>
+    <path
+      class="thread-twist"
+      stroke-width="0.9"
+      d="M-30-10-26-4M-20-12-16-5M30-10 26-4M20-12 16-5"
+    ></path>
+    <path
+      class="thread-line"
+      stroke-width="4"
+      d="M-2 2C-8 16-18 28-30 40M2 2C8 16 16 30 30 38"
+    ></path>
+    <ellipse class="thread-fill" rx="6" ry="7"></ellipse>
+  </svg>
+
   <div class="intro" data-thread-intro>
     <h2 id="red-thread-title" class="label title">
       {redThread.title}
@@ -80,10 +115,12 @@ import { redThread, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
     z-index: 1;
   }
 
-  /* Thread (created by the script) ------------------------------------------- */
-  /* A clipping window moved with transforms; see red-thread.ts. */
-  .red-thread :global(.thread) {
+  /* Thread (drawn by the script) ---------------------------------------------- */
+  /* A window over the whole section (plus room above it for the start under the yarn ball) that never moves; the script reveals the thread with a rectangular clip-path. See red-thread.ts. */
+  .thread {
     position: absolute;
+    top: calc(-1 * var(--thread-overhang));
+    bottom: 0;
     left: 0;
     width: 100%;
     overflow: hidden;
@@ -91,44 +128,49 @@ import { redThread, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
     will-change: transform;
   }
 
-  .red-thread :global(.thread-svg) {
+  .thread-svg {
     display: block;
+    width: 100%;
+    height: 100%;
     overflow: visible;
-    will-change: transform;
   }
 
-  .red-thread :global(.thread-line),
-  .red-thread :global(.thread-twist) {
+  .thread-line,
+  .thread-twist {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .red-thread :global(.thread-line) {
+  .thread-line {
     stroke: var(--thread-color);
   }
 
-  .red-thread :global(.thread-core) {
+  .thread-core {
     stroke-width: var(--thread-width);
   }
 
-  .red-thread :global(.thread-twist) {
+  .thread-twist {
     stroke: var(--thread-twist-color);
   }
 
-  .red-thread :global(.thread-fill) {
+  .thread-fill {
     fill: var(--thread-color);
   }
 
-  .red-thread :global(.thread-bow) {
+  /* The bow over the closing line: placed by the script with a transform. */
+  .thread-bow {
     position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--thread-bow-width);
     overflow: visible;
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--thread-end-duration) ease;
   }
 
-  .red-thread :global(.thread-bow.is-shown) {
+  .thread-bow.is-shown {
     opacity: 1;
   }
 
@@ -306,6 +348,10 @@ import { redThread, SHOW_PLACEHOLDER_TAGS, site } from "../../data/site";
 
   /* Mobile: one column; the left gutter is kept for the thread. ---------------- */
   @media (width < 760px) {
+    .thread-bow {
+      width: var(--thread-bow-width-mobile);
+    }
+
     .red-thread {
       padding: var(--space-6xl) var(--space-m) var(--space-4xl) var(--space-4xl);
     }

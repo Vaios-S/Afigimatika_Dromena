@@ -105,7 +105,8 @@ The tree above, beside and below the letter form is **not** an inline ornament. 
 ## Red thread
 
 - `src/scripts/red-thread.ts` (homepage) draws the thread. Its geometry tunables (tip position, knots, path shape) are named constants in the block at the top of the file. The thread's texture (wobble, twist ticks, fibres) is drawn by `drawThread()` in `src/lib/thread.ts`, with its own tunables at the top; the 404 page uses it too, so both threads look the same. Colors, core width and reveal timings are the `--thread-*` variables in `tokens.css`.
-- Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write transforms and classes only.
+- Keep the scroll loop free of layout reads: measure in `layout()` (runs on resize and font load only); `update()` may read `window.scrollY` and write the clip-path and classes only.
+- No layout shift (CLS): the thread's box (`.thread`, covering the section plus `--thread-overhang` above it for the start under the yarn ball) and the bow are in the markup of `RedThread.astro`, sized by CSS from the first paint. The script only fills in the paths, reveals the thread with a rectangular `clip-path` and places the bow with a transform. Never create, move or resize them from the script: a moving box this tall counts as a full-screen shift.
 - Hidden reveal states exist only under `.is-animated`, which the script sets when motion is allowed. Without JavaScript, or with reduced motion, all content is visible.
 
 ## Storytellers sequence (/omada)

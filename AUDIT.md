@@ -20,6 +20,14 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **M1. Homepage layout shift of 1.0 (red thread)** [Performance]
 
+> **Fixed.** The thread's box and the bow are now in the markup of `RedThread.astro`, sized by CSS from the first paint (`--thread-overhang`, `--thread-bow-width`). The script reveals the thread with a rectangular `clip-path` and places the bow with a transform, so nothing moves when it runs or when late fonts reflow the page. Results:
+>
+> - Lighthouse mobile: CLS 1.0 → 0.075, performance 70 → 93. The rest is the hero title reflowing when the fonts arrive; see S5.
+> - Lighthouse desktop: CLS 0.01, performance 100.
+> - Plain Chrome: CLS 0.012 (1440px) and 0.045 (390px), with no new shifts while scrolling through the page.
+> - The thread's path data is byte-identical to before at both widths, and scrolling with the CPU slowed 4× runs at a median 16.6 ms per frame.
+> - Reveal, cards, bow, reduced-motion and no-JavaScript behaviour are unchanged, checked in Chrome and WebKit.
+
 - Where: `src/scripts/red-thread.ts:139` (the thread is inserted into the page) and `:307` (`clip.style.top` / `height` set afterwards).
 - Why: measured CLS 1.01 at 1440px and 1.13 at 390px in plain Chrome (Lighthouse: 1.0, the worst possible score; the "good" limit is 0.1). The thread's clipping box is inserted, then moved and resized once it has been measured, and every move counts as a layout shift. CLS is a Core Web Vital that Google uses in ranking, and it pulls the homepage score down to 70.
 - Fix: measure first and insert the thread with its final top and height, then move it only with transforms (transforms do not count as layout shifts). Target: CLS below 0.1.

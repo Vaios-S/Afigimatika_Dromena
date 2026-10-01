@@ -11,22 +11,21 @@
  *
  * Performance: all measuring happens in layout(), which runs only when the
  * page size changes (resize, fonts, images). The scroll loop reads
- * window.scrollY, then writes two transforms: the thread sits in a clipping
- * window whose edge follows the tip, which the compositor can move without
- * repainting. Class changes are written only when a state actually flips.
+ * window.scrollY, then writes one rectangular clip-path: the thread sits in
+ * a window whose lower edge follows the tip, a clip the compositor applies
+ * without repainting the drawing. Class changes are written only when a state actually flips.
+ *
+ * Layout stability: the clipping window, the drawing and the bow are in the
+ * markup (RedThread.astro), sized by CSS from the first paint. This script
+ * only fills in the paths, clips the window and places the bow with a
+ * transform; the window itself never moves, so drawing and revealing the
+ * thread never shift the layout (no CLS), even when late fonts reflow the page.
  *
  * Colors, the thread's core width and all reveal timings are CSS variables in
  * src/styles/tokens.css (the "Red thread" block).
  */
 
-import {
-  catmullRom,
-  drawThread,
-  FIBRE_WIDTH,
-  round,
-  TICK_WIDTH,
-  type Point,
-} from "../lib/thread";
+import { catmullRom, drawThread, round, type Point } from "../lib/thread";
 
 /* ==========================================================================
    Tunables: adjust the feel here without touching the algorithm.
@@ -68,8 +67,6 @@ const SHAPE = {
   mobileX: 26,
   /** The bow sits this far above the closing line. */
   endAboveText: { desktop: 64, mobile: 34 },
-  /** Bow size relative to the desktop bow. */
-  bowScale: { desktop: 1, mobile: 0.7 },
 };
 
 /** Must match the layout breakpoint in RedThread.astro. */
@@ -84,14 +81,7 @@ interface Waypoint extends Point {
   knot?: 1 | -1;
 }
 
-const SVG_NS = "http://www.w3.org/2000/svg";
 const LOOP_POINTS = 40;
-
-const BOW_MARKUP = `
-  <path class="thread-line" stroke-width="4" d="M0 0C-12-18-40-22-44-6-47 8-20 8 0 0ZM0 0C12-18 40-22 44-6 47 8 20 8 0 0Z"/>
-  <path class="thread-twist" stroke-width="0.9" d="M-30-10-26-4M-20-12-16-5M30-10 26-4M20-12 16-5"/>
-  <path class="thread-line" stroke-width="4" d="M-2 2C-8 16-18 28-30 40M2 2C8 16 16 30 30 38"/>
-  <ellipse class="thread-fill" rx="6" ry="7"/>`;
 
 /** Offset of an element from `root`, ignoring transforms (cards may be mid-reveal). */
 function offsetWithin(el: HTMLElement, root: HTMLElement) {
@@ -113,30 +103,17 @@ interface Parts {
   cards: HTMLElement[];
   /** Yarn ball ornaments (desktop crest and mobile ball); the visible one is used. */
   balls: SVGSVGElement[];
+  /** The thread's clipping window, its drawing and the bow: in the markup, sized by CSS. */
+  clip: HTMLElement;
+  svg: SVGSVGElement;
+  bow: SVGSVGElement;
 }
 
-function init({ section, intro, ending, cards, balls }: Parts) {
-  // Thread: a clipping window (outer) holding the drawing (inner svg).
-  const clip = document.createElement("div");
-  clip.className = "thread";
-  clip.setAttribute("aria-hidden", "true");
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.classList.add("thread-svg");
-  svg.innerHTML =
-    '<path class="thread-line thread-core"/><path class="thread-twist"/>' +
-    '<path class="thread-line thread-fibres"/><path class="thread-fill"/>';
-  const [core, ticks, fibres, knots] = [...svg.children] as SVGPathElement[];
-  ticks.setAttribute("stroke-width", String(TICK_WIDTH));
-  fibres.setAttribute("stroke-width", String(FIBRE_WIDTH));
-  clip.append(svg);
-
-  const bow = document.createElementNS(SVG_NS, "svg");
-  bow.classList.add("thread-bow");
-  bow.setAttribute("aria-hidden", "true");
-  bow.setAttribute("viewBox", "-50 -26 100 70");
-  bow.innerHTML = BOW_MARKUP;
-
-  section.prepend(clip, bow);
+function init({ section, intro, ending, cards, balls, clip, svg, bow }: Parts) {
+  // Core line, twist ticks, fibres, knot dots (in this order in RedThread.astro).
+  const [core, ticks, fibres, knots] = [
+    ...svg.querySelectorAll("path"),
+  ] as SVGPathElement[];
 
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const mobileQuery = matchMedia(MOBILE_QUERY);
@@ -279,13 +256,7 @@ function init({ section, intro, ending, cards, balls }: Parts) {
     points.push(end);
 
     // 2. Wobble, twist ticks and fibres (src/lib/thread.ts).
-    const {
-      core: coreD,
-      ticks: ticksD,
-      fibres: fibresD,
-      minY,
-      maxY,
-    } = drawThread(points);
+    const { core: coreD, ticks: ticksD, fibres: fibresD } = drawThread(points);
     const dot = knot.dot;
     const knotsD = knotPoints
       .map(
@@ -294,35 +265,31 @@ function init({ section, intro, ending, cards, balls }: Parts) {
       )
       .join("");
 
-    // 4. Write the drawing and size the clipping window around it.
-    originY = Math.floor(minY - 20);
-    height = Math.ceil(maxY + 20) - originY;
+    // 3. Write the drawing. The clipping window is sized by CSS (the whole
+    // section plus --thread-overhang above it), so the viewBox maps the
+    // drawing 1:1 onto it in section coordinates and nothing here changes
+    // the layout. The bow (sized by CSS) is placed with a transform.
+    originY = clip.offsetTop;
+    height = clip.offsetHeight;
     core.setAttribute("d", coreD);
     ticks.setAttribute("d", ticksD);
     fibres.setAttribute("d", fibresD);
     knots.setAttribute("d", knotsD);
     svg.setAttribute("viewBox", `0 ${originY} ${width} ${height}`);
-    svg.setAttribute("width", String(width));
-    svg.setAttribute("height", String(height));
-    clip.style.top = `${originY}px`;
-    clip.style.height = `${height}px`;
 
-    const scale = mobile ? SHAPE.bowScale.mobile : SHAPE.bowScale.desktop;
-    bow.style.width = `${100 * scale}px`;
-    bow.style.left = `${end.x - 50 * scale}px`;
-    bow.style.top = `${end.y - 26 * scale}px`;
+    const scale = bow.getBoundingClientRect().width / 100;
+    bow.style.transform = `translate(${round(end.x - 50 * scale)}px, ${round(end.y - 26 * scale)}px)`;
 
     drawn = -1;
     ready = true;
   }
 
-  /** Moves the clipping window so everything above `visible` px is shown. */
+  /** Clips the window so everything above `visible` px (from its top) is shown. */
   function reveal(visible: number) {
     const v = Math.round(Math.max(0, Math.min(height, visible)) * 2) / 2;
     if (v === drawn) return;
     drawn = v;
-    clip.style.transform = `translate3d(0, ${v - height}px, 0)`;
-    svg.style.transform = `translate3d(0, ${height - v}px, 0)`;
+    clip.style.clipPath = `inset(0 0 ${height - v}px 0)`;
   }
 
   function update() {
@@ -403,6 +370,18 @@ const cards = [
 const balls = [
   ...document.querySelectorAll<SVGSVGElement>("[data-thread-ball]"),
 ];
-if (section && intro && ending && cards.length && balls.length) {
-  init({ section, intro, ending, cards, balls });
+const clip = section?.querySelector<HTMLElement>("[data-thread]");
+const svg = clip?.querySelector("svg");
+const bow = section?.querySelector<SVGSVGElement>("[data-thread-bow]");
+if (
+  section &&
+  intro &&
+  ending &&
+  cards.length &&
+  balls.length &&
+  clip &&
+  svg &&
+  bow
+) {
+  init({ section, intro, ending, cards, balls, clip, svg, bow });
 }

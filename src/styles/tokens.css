@@ -249,6 +249,9 @@
   --thread-color: var(--color-ink-red);
   --thread-twist-color: var(--color-oxblood);
   --thread-width: 4.4px;
+  --thread-overhang: 6rem; /* the thread's box reaches this far above its section, for the start under the yarn ball */
+  --thread-bow-width: 6.25rem; /* 100, bow over the closing line */
+  --thread-bow-width-mobile: 4.375rem; /* 70 */
 
   /* Reveal timing. Geometry (tip position, wobble, knots, fibres) lives in
      src/scripts/red-thread.ts. */
