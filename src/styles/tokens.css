@@ -10,9 +10,94 @@
 @import "@fontsource/literata/400.css";
 @import "@fontsource/literata/400-italic.css";
 
+/* Metric-matched fallbacks: until the web fonts arrive, text is set in a
+   local font (Georgia; Noto Serif on Android) scaled to take the same space,
+   so nothing re-wraps or moves when they swap in (no layout shift).
+   The values depend on the fonts: recompute them when a font changes (see
+   "How to change fonts" in CLAUDE.md). */
+@font-face {
+  font-family: "Alegreya Fallback";
+  src: local("Georgia");
+  size-adjust: 89.85%;
+  ascent-override: 113.08%;
+  descent-override: 38.4%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Alegreya Fallback";
+  font-style: italic;
+  src: local("Georgia Italic"), local("Georgia-Italic");
+  size-adjust: 82.42%;
+  ascent-override: 123.27%;
+  descent-override: 41.86%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Alegreya Fallback Noto";
+  src: local("Noto Serif"), local("NotoSerif-Regular");
+  size-adjust: 85.4%;
+  ascent-override: 118.97%;
+  descent-override: 40.4%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Alegreya Fallback Noto";
+  font-style: italic;
+  src: local("Noto Serif Italic"), local("NotoSerif-Italic");
+  size-adjust: 78.4%;
+  ascent-override: 129.59%;
+  descent-override: 44.01%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Literata Fallback";
+  src: local("Georgia");
+  size-adjust: 105.33%;
+  ascent-override: 111.75%;
+  descent-override: 29.24%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Literata Fallback";
+  font-style: italic;
+  src: local("Georgia Italic"), local("Georgia-Italic");
+  size-adjust: 101.33%;
+  ascent-override: 116.16%;
+  descent-override: 30.4%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Literata Fallback Noto";
+  src: local("Noto Serif"), local("NotoSerif-Regular");
+  size-adjust: 100.12%;
+  ascent-override: 117.56%;
+  descent-override: 30.76%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Literata Fallback Noto";
+  font-style: italic;
+  src: local("Noto Serif Italic"), local("NotoSerif-Italic");
+  size-adjust: 96.38%;
+  ascent-override: 122.12%;
+  descent-override: 31.96%;
+  line-gap-override: 0%;
+}
+
 :root {
-  --font-display: "Alegreya", Georgia, "Times New Roman", serif;
-  --font-body: "Literata", Georgia, "Times New Roman", serif;
+  --font-display:
+    "Alegreya", "Alegreya Fallback", "Alegreya Fallback Noto", Georgia,
+    "Times New Roman", serif;
+  --font-body:
+    "Literata", "Literata Fallback", "Literata Fallback Noto", Georgia,
+    "Times New Roman", serif;
   --font-mono: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
 
   /* ------------------------------------------------------------------------
@@ -269,9 +354,11 @@
 
   /* ------------------------------------------------------------------------
      Storytellers sequence (/omada)
-     Scroll distance and hysteresis live in src/scripts/storytellers.ts.
+     Hysteresis and the click lock live in src/scripts/storytellers.ts.
      The change is time-based: scroll only picks who is shown.
      ------------------------------------------------------------------------ */
+  --sequence-scroll-step: 100svh; /* scroll distance each storyteller stays on screen */
+  --sequence-fit-margin: 24px; /* free space the frame needs above and below to be pinned (px: read by the scripts) */
   --sequence-in-duration: 700ms; /* incoming storyteller fades and rises in */
   --sequence-in-delay: 120ms; /* lets the outgoing one start fading first */
   --sequence-out-duration: 320ms; /* outgoing storyteller fades out */

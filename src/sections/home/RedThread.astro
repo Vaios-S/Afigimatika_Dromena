@@ -5,6 +5,9 @@
  * attributes mark what it measures. Without JavaScript everything is visible.
  * Desktop: cards alternate left and right, overlapping vertically, leaving a
  * central gutter for the thread. Mobile: one column with a left gutter.
+ * The thread's box and the bow are in the markup from the first paint, sized
+ * by CSS; the script only fills in the paths, clips the box and places the
+ * bow with a transform, so drawing the thread never shifts the layout.
  */
 import Ornament from "../../components/Ornament.astro";
 import Photo from "../../components/Photo.astro";
@@ -13,7 +16,6 @@ import { FIBRE_WIDTH, TICK_WIDTH } from "../../lib/thread";
 ---
 
 <section class="red-thread" aria-labelledby="red-thread-title" data-red-thread>
-  <!-- The thread's box and the bow are in the page from the first paint, sized by CSS; the script only fills in the paths and moves them with transforms, so drawing never shifts the layout. -->
   <div class="thread" aria-hidden="true" data-thread>
     <svg class="thread-svg" focusable="false">
       <path class="thread-line thread-core"></path>

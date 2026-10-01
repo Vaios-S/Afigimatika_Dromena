@@ -22,7 +22,7 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 > **Fixed.** The thread's box and the bow are now in the markup of `RedThread.astro`, sized by CSS from the first paint (`--thread-overhang`, `--thread-bow-width`). The script reveals the thread with a rectangular `clip-path` and places the bow with a transform, so nothing moves when it runs or when late fonts reflow the page. Results:
 >
-> - Lighthouse mobile: CLS 1.0 → 0.075, performance 70 → 93. The rest is the hero title reflowing when the fonts arrive; see S5.
+> - Lighthouse mobile: CLS 1.0 → 0.075, performance 70 → 93. The remaining 0.075 was the hero title reflowing when the fonts arrive; the font fallbacks added in M2 bring it to 0.
 > - Lighthouse desktop: CLS 0.01, performance 100.
 > - Plain Chrome: CLS 0.012 (1440px) and 0.045 (390px), with no new shifts while scrolling through the page.
 > - The thread's path data is byte-identical to before at both widths, and scrolling with the CPU slowed 4× runs at a median 16.6 ms per frame.
@@ -33,6 +33,17 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 - Fix: measure first and insert the thread with its final top and height, then move it only with transforms (transforms do not count as layout shifts). Target: CLS below 0.1.
 
 **M2. /omada layout shift of 0.17 on phones (storytellers sequence)**
+
+> **Fixed.**
+>
+> - **Sequence before the first paint.** A few lines of inline script after the section in `Storytellers.astro` choose the mode before the first paint, with the same test as before. The first storyteller and step are active in the markup, and the scroll length comes from CSS (`--sequence-count`, `--sequence-scroll-step`). `storytellers.ts` keeps that choice and only re-chooses when the screen's width or the motion preference changes, so its fit test no longer flips the class on load. The fit margin moved to `--sequence-fit-margin`.
+> - **The main cause was the font swap.** Measuring showed most of the 0.17 came from the page title re-wrapping when Alegreya replaced Georgia (137px → 92px tall), which moved the whole tall section. `tokens.css` now has metric-matched fallback faces (Georgia, and Noto Serif for Android) with `size-adjust` and ascent/descent overrides computed from the font files, so text takes the same space before and after the swap. This is the layout-shift part of S5.
+> - **Results:**
+>   - CLS 0 on `/omada` at 1440×900, 1366×650, 1280×600, 390×844, 375×667 and 360×640, with the right mode from the first frame in Chrome and WebKit.
+>   - CLS 0 to 0.001 on the homepage, `/proskaleste-mas`, `/nea` and a post.
+>   - Lighthouse mobile: `/omada` CLS 0.169 → 0, performance 88 → 94; homepage CLS 0, performance 93. Desktop: 100 and 99.
+>   - Sequence behaviour, the short-screen fallback, resizing, reduced motion and no-JavaScript checks unchanged.
+>   - The Noto Serif (Android) values are computed, not device-tested; added to checklist item 9.
 
 - Where: `src/scripts/storytellers.ts:93` (`.is-sequence` is added after the first paint).
 - Why: the stacked list paints first and then turns into the pinned frame, which moves everything below it. 0.17 is in the "needs improvement" range.
@@ -79,6 +90,8 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 - Fix: set `build: { inlineStylesheets: "always" }`, then re-measure. The trade-off is that CSS is no longer cached between pages (about 17 KB per page view).
 
 **S5. Fonts: no preload, and text reflows when they arrive**
+
+> **Partly fixed in M2:** the reflow (layout shift) is solved by the metric-matched fallback faces. The preload remains for group 5.
 
 - Where: `src/layouts/BaseLayout.astro` (head) and `src/styles/tokens.css:7-11`.
 - Why: every page downloads 10 font files (153 KB: Greek and Latin for 5 faces; the Latin files are needed for digits, punctuation and Latin names). The `h1` is the largest paint on every page. The font swap adds about 0.06 CLS to the homepage on phones.

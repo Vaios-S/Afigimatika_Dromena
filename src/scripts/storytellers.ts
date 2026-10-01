@@ -9,6 +9,12 @@
  *
  * - No JavaScript, reduced motion, or a frame taller than the screen: the
  *   stacked list stays (the class .is-sequence is never added).
+ * - The class is added before the first paint by a small inline script in
+ *   Storytellers.astro, with the same fit test, so the page does not shift
+ *   when this script loads. This script keeps that choice: it re-measures
+ *   when sizes change, falls back to the stacked list if the frame stops
+ *   fitting, and chooses again only when the screen's width or the motion
+ *   preference changes.
  * - Step buttons (aria-current="step") scroll smoothly to a storyteller.
  *
  * Performance: everything is measured in layout(), which runs only when sizes
@@ -18,11 +24,10 @@
 
 /* ==========================================================================
    Tunables: adjust the feel here without touching the logic.
-   Transition duration, easing and rise distance are in tokens.css.
+   Scroll distance per storyteller, fit margin, transition duration, easing
+   and rise distance are in tokens.css ("Storytellers sequence"), because the
+   first paint needs them too.
    ========================================================================== */
-
-/** Scroll distance each storyteller stays on screen, in % of the screen height. */
-const SCROLL_PER_STORYTELLER = 100;
 
 /**
  * How far past a boundary the page must scroll before switching, as a share
@@ -30,9 +35,6 @@ const SCROLL_PER_STORYTELLER = 100;
  * boundary; larger values switch later.
  */
 const HYSTERESIS = 0.12;
-
-/** Free space the frame needs above and below it to be pinned (px). */
-const FIT_MARGIN = 24;
 
 /** After a step button is clicked, ignore scroll-driven changes for up to this long (ms). */
 const CLICK_LOCK = 1500;
@@ -54,13 +56,10 @@ interface Parts {
 function init({ section, pin, stage, people, steps }: Parts) {
   const count = people.length;
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  section.style.setProperty(
-    "--sequence-scroll",
-    `${count * SCROLL_PER_STORYTELLER}svh`,
-  );
 
-  // Cached by layout(), read by update().
-  let enabled = false;
+  // The inline script in Storytellers.astro has already chosen the mode
+  // before the first paint. Cached by measure(), read by update().
+  let enabled = section.classList.contains("is-sequence");
   let top = 0;
   let span = 1;
   let active = -1;
@@ -85,24 +84,43 @@ function init({ section, pin, stage, people, steps }: Parts) {
     return Math.min(progress * count, count - 1e-6);
   }
 
-  function layout() {
-    const scrollY = window.scrollY;
-    const fits = () => stage.offsetHeight + 2 * FIT_MARGIN <= pin.clientHeight;
+  /** Does the frame fit on screen? Measured in the current mode. */
+  function fits() {
+    const margin = parseFloat(
+      getComputedStyle(section).getPropertyValue("--sequence-fit-margin"),
+    );
+    return stage.offsetHeight + 2 * margin <= pin.clientHeight;
+  }
 
-    // Measure in sequence mode; fall back to the stacked list if it doesn't fit.
-    section.classList.add("is-sequence");
-    enabled = !reducedMotion.matches && fits();
-    section.classList.toggle("is-sequence", enabled);
-
-    // Switching modes changes the page height; keep the reader where they were.
-    if (window.scrollY !== scrollY)
-      window.scrollTo({ top: scrollY, behavior: "instant" });
-    if (!enabled) return;
-
+  /** Sequence mode: where it starts and how far it scrolls. */
+  function measure() {
     top = section.getBoundingClientRect().top + window.scrollY;
     span = Math.max(1, section.offsetHeight - pin.clientHeight);
     active = -1;
     setActive(Math.floor(position()));
+  }
+
+  /**
+   * Chooses the mode again (the screen's width or the motion preference
+   * changed). Trying sequence mode to measure it can register as a layout
+   * shift, so this runs only on those changes, never on load.
+   */
+  function decide() {
+    const scrollY = window.scrollY;
+    section.classList.add("is-sequence");
+    enabled = !reducedMotion.matches && fits();
+    section.classList.toggle("is-sequence", enabled);
+    // Switching modes changes the page height; keep the reader where they were.
+    if (window.scrollY !== scrollY)
+      window.scrollTo({ top: scrollY, behavior: "instant" });
+    if (enabled) measure();
+  }
+
+  /** Sizes changed (fonts, images, screen height): keep the mode, re-measure. */
+  function layout() {
+    if (!enabled) return;
+    if (fits()) measure();
+    else decide();
   }
 
   function update() {
@@ -155,20 +173,41 @@ function init({ section, pin, stage, people, steps }: Parts) {
     update();
   });
 
-  // Size changes: re-measure once, on the next frame.
+  // Size changes: re-measure once, on the next frame. A new screen width or
+  // motion preference re-chooses the mode; a height-only change (a phone's
+  // address bar hiding while scrolling) never switches it mid-scroll.
   let layoutFrame = 0;
-  const scheduleLayout = () => {
+  let rechoose = false;
+  let width = window.innerWidth;
+  const schedule = (choose = false) => {
+    rechoose ||= choose;
     if (!layoutFrame) {
       layoutFrame = requestAnimationFrame(() => {
         layoutFrame = 0;
-        layout();
+        if (rechoose) decide();
+        else layout();
+        rechoose = false;
       });
     }
   };
-  window.addEventListener("resize", scheduleLayout, { passive: true });
-  new ResizeObserver(scheduleLayout).observe(document.body);
-  document.fonts.ready.then(scheduleLayout);
-  reducedMotion.addEventListener("change", scheduleLayout);
+  window.addEventListener(
+    "resize",
+    () => {
+      const widthChanged = window.innerWidth !== width;
+      width = window.innerWidth;
+      schedule(widthChanged);
+    },
+    { passive: true },
+  );
+  new ResizeObserver(() => {
+    schedule();
+  }).observe(document.body);
+  void document.fonts.ready.then(() => {
+    schedule();
+  });
+  reducedMotion.addEventListener("change", () => {
+    schedule(true);
+  });
 
   layout();
 }

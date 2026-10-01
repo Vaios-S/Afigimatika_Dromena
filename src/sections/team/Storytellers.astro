@@ -5,9 +5,12 @@
  * alternate the portrait left and right; narrower screens stack it on top.
  * This is also the version shown without JavaScript or with reduced motion.
  *
- * With JavaScript, src/scripts/storytellers.ts adds .is-sequence: the frame
- * is pinned while the page scrolls, one storyteller shows at a time and the
- * step buttons appear. Everything under .is-sequence below is that mode.
+ * With JavaScript, .is-sequence is added: the frame is pinned while the page
+ * scrolls, one storyteller shows at a time and the step buttons appear.
+ * Everything under .is-sequence below is that mode. The small inline script
+ * after the section adds it before the first paint (so the page does not
+ * shift); src/scripts/storytellers.ts runs the sequence and re-checks the fit
+ * after fonts load and on resize.
  */
 import Ornament from "../../components/Ornament.astro";
 import Photo from "../../components/Photo.astro";
@@ -25,6 +28,7 @@ const counter = (n: number) =>
 <section
   class="storytellers"
   aria-labelledby="storytellers-title"
+  style={`--sequence-count: ${total}`}
   data-storytellers
 >
   <div class="pin">
@@ -37,7 +41,7 @@ const counter = (n: number) =>
         <div class="list">
           {storytellers.list.map((person, i) => (
             <article
-              class="person"
+              class:list={["person", { "is-active": i === 0 }]}
               aria-labelledby={`storyteller-${i}`}
               data-storyteller
             >
@@ -89,7 +93,12 @@ const counter = (n: number) =>
         {storytellers.list.map((person, i) => (
           <>
             {i > 0 && <span class="step-line" aria-hidden="true" />}
-            <button type="button" class="step" data-step={i}>
+            <button
+              type="button"
+              class="step"
+              aria-current={i === 0 ? "step" : undefined}
+              data-step={i}
+            >
               <span class="step-mark" aria-hidden="true">
                 <Ornament name="flower" class="step-flower" />
                 <span class="step-ring" />
@@ -102,6 +111,21 @@ const counter = (n: number) =>
     </div>
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const section = document.currentScript.previousElementSibling;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    section.classList.add("is-sequence");
+    const margin = parseFloat(
+      getComputedStyle(section).getPropertyValue("--sequence-fit-margin"),
+    );
+    const stage = section.querySelector(".stage");
+    const pin = section.querySelector(".pin");
+    if (stage.offsetHeight + 2 * margin > pin.clientHeight)
+      section.classList.remove("is-sequence");
+  })();
+</script>
 
 <script>
   import "../../scripts/storytellers";
@@ -338,9 +362,9 @@ const counter = (n: number) =>
     display: none;
   }
 
-  /* Sequence mode (.is-sequence, set by storytellers.ts) ================== */
+  /* Sequence mode (.is-sequence, set before the first paint; see the top of this file) == */
   .is-sequence {
-    height: calc(100svh + var(--sequence-scroll));
+    height: calc(100svh + var(--sequence-count) * var(--sequence-scroll-step));
     padding-block: 0;
   }
 
