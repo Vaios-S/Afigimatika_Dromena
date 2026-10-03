@@ -167,12 +167,17 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 > - **Names:** `partners.showNames` (default `true`, to be decided with the group). While on, the name shows under the logo in a smaller size and the logo has an empty alt, so screen readers read the name once. When off, the logo stands alone and the name becomes its alt text. A partner without a logo always shows its name.
 > - **Placeholders:** while a logo is a placeholder, the tile shows the name with the "λογότυπο" hint, as before. With all six still placeholders the homepage markup is unchanged.
 > - **Tested** on a copy with a wide SVG, a wide PNG on a white background and a square transparent PNG, with names on and off, at 1440 and 390px.
+> - **One colour (added after review):** as the design asks, logos are shown in a single palette colour by default, `--color-logo` in `tokens.css`. It is set to the muted ink: compared side by side, the full ink looked heavy next to the red names. A small SVG filter in `Partners.astro` (applied with CSS `filter`, so it works on SVG and PNG alike and leaves the fixed box as it is) makes opacity follow darkness: dark parts become solid colour, light parts and white backgrounds turn into paper, transparent areas stay transparent. A multi-colour logo keeps its shapes as tones of the one colour, with its lightest colours (yellow, light blue) the palest. A partner with `originalColours: true` in `site.ts` keeps its own colours (shown as before, with the white-background blend). Tested with the three logos above plus a multi-colour one (red, yellow, light blue and green blocks, dark lettering, a pale grey line), in Chromium and WebKit at 1440 and 390px, all in one colour and with one logo in its original colours.
 
 - Where: `src/sections/home/Partners.astro` (names only, plus a "λογότυπο" hint while placeholder tags are on).
 - Why: the logos are in the content request below, but nothing can show them yet.
 - Fix: add an optional `logo` (image key) per partner in `site.ts`, shown in the tile with the name as alt text. Decide with the group whether names stay visible next to the logos.
 
 **S8. Dependencies: three minor updates available**
+
+> **Fixed** (3 October). Updated `globals` 17.12.0 → 17.13.0, `typescript-eslint` 8.70.1 → 8.71.0 and `prettier-plugin-astro` 1.0.1 → 1.1.0, plus `eslint` 10.11.0 → 10.12.0, released since the audit. All are development tools, so the built site is unaffected. Build and lint pass, and the new Prettier plugin reformatted nothing. `npm outdated` now lists only TypeScript 7 (kept on 6, see the table) and the stale `eslint-plugin-astro` tag.
+>
+> **New `npm audit` advisory** (not caused by these updates): 2 high, both from `http-cache-semantics` 4.2.0, which Astro 7.3.5 (the latest) uses ([GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp), every version affected, no fix yet). Astro uses it only at build time, to cache remote images (`assets/build/remote.js`). The flaw concerns shared caches serving several users, which a static build is not, so it does not apply here. `npm audit fix --force` would downgrade Astro to 2.10.9: do not run it. Recheck when Astro or the package releases a fix.
 
 - Where: `package.json`.
 - Fix: update `globals` 17.12 → 17.13, `typescript-eslint` 8.70 → 8.71 and `prettier-plugin-astro` 1.0.1 → 1.1.0 now, then run `npm run lint` (Prettier formatting may shift). The full table is under "Dependencies" below.
@@ -302,13 +307,14 @@ The dev-only form simulation is absent from the build (`simulate` appears 0 time
 | Package               | Installed | Latest  | Recommendation                                                                                             |
 | --------------------- | --------- | ------- | ---------------------------------------------------------------------------------------------------------- |
 | astro                 | 7.3.5     | 7.3.5   | Current.                                                                                                   |
-| globals               | 17.12.0   | 17.13.0 | Update now.                                                                                                |
-| typescript-eslint     | 8.70.1    | 8.71.0  | Update now.                                                                                                |
-| prettier-plugin-astro | 1.0.1     | 1.1.0   | Update now, then run lint.                                                                                 |
+| globals               | 17.13.0   | 17.13.0 | Updated (S8).                                                                                              |
+| typescript-eslint     | 8.71.0    | 8.71.0  | Updated (S8).                                                                                              |
+| prettier-plugin-astro | 1.1.0     | 1.1.0   | Updated (S8); lint unchanged.                                                                              |
+| eslint                | 10.12.0   | 10.12.0 | Updated (S8).                                                                                              |
 | typescript            | 6.0.3     | 7.0.2   | Ignore for now: pinned because `astro check` does not support 7 yet. Revisit when Astro announces support. |
 | eslint-plugin-astro   | 3.2.1     | 3.2.1   | Current (`npm outdated` showed a stale "1.7.0"; the registry says 3.2.1).                                  |
 
-`npm audit`: 0 vulnerabilities.
+`npm audit`: 0 vulnerabilities at the audit; since 3 October 2 high from `http-cache-semantics` inside Astro, not applicable to a static build (see S8).
 
 ### 8. Documentation
 
@@ -383,7 +389,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
   - Δημοτική Βιβλιοθήκη Θεσσαλονίκης
   - Δήμος Θεσσαλονίκης
 
-  Needed: the final list, plus each logo as SVG (or PNG at least 600px wide on a transparent background), with permission to use it. To add one: see S7.
+  Needed: the final list, plus each logo as SVG (or PNG at least 600px wide on a transparent background), with permission to use it. For each partner: may the logo be shown in the site's single colour (the muted brown of the text), or must it keep its official colours? Ask especially the Ministry of Culture and any funded programme. To add one: see S7.
 
 - **Footer:** tagline "Αφηγήσεις σε όλη την Ελλάδα και το εξωτερικό" (confirm). "English (σύντομα)" stays until the English version.
 
