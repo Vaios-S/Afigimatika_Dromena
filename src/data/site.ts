@@ -188,10 +188,16 @@ export const testimonials = {
   ],
 };
 
-interface Partner {
+export interface Partner {
   name: string;
   /** Logo in the image registry (images.ts). Leave out for a partner without one. */
   logo?: ImageKey;
+  /**
+   * Keep the logo's own colours. By default every logo is shown in one colour
+   * (--color-logo in tokens.css); set this for an organisation that requires
+   * its official colours.
+   */
+  originalColours?: boolean;
 }
 
 export const partners = {

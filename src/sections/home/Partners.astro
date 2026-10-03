@@ -1,34 +1,50 @@
 ---
 /**
  * Collaborations: partner tiles with logo and/or name (partners in site.ts).
- * A logo is shown whole in a fixed box, so it never shifts the layout. While a
- * logo is a placeholder, the name shows with a small "λογότυπο" hint (with the
- * placeholder tags).
+ * A logo is shown whole in a fixed box, so it never shifts the layout. Logos
+ * are shown in one colour (--color-logo) unless a partner keeps its
+ * `originalColours`. While a logo is a placeholder, the name shows with a
+ * small "λογότυπο" hint (with the placeholder tags).
  */
 import { Image } from "astro:assets";
 import { imageFile } from "../../data/images";
-import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
+import { partners, SHOW_PLACEHOLDER_TAGS, type Partner } from "../../data/site";
 
-const tiles = partners.list.map((partner) => ({
+const list: Partner[] = partners.list;
+const tiles = list.map((partner) => ({
   ...partner,
   file: partner.logo && imageFile(partner.logo),
 }));
+const anyInk = tiles.some((tile) => tile.file && !tile.originalColours);
 // Raster logos get responsive widths; an SVG is served as it is.
 const rasterSizing = { widths: [200, 400, 600], sizes: "10rem" };
 ---
 
 <section class="partners" aria-labelledby="partners-title">
+  {anyInk && (
+    <svg class="defs" aria-hidden="true" focusable="false">
+      <!-- One colour: opacity = 1.5 × (alpha − luminance), so dark parts become solid ink and white or transparent parts disappear; then filled with --color-logo. -->
+      <filter id="logo-ink" color-interpolation-filters="sRGB">
+        <feColorMatrix
+          values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.319 -1.073 -0.108 1.5 0"
+          result="shape"
+        ></feColorMatrix>
+        <feFlood class="ink-flood"></feFlood>
+        <feComposite in2="shape" operator="in"></feComposite>
+      </filter>
+    </svg>
+  )}
   <h2 id="partners-title" class="label title">
     {partners.title}
   </h2>
   <ul class="list" role="list">
-    {tiles.map(({ name, logo, file }) => (
+    {tiles.map(({ name, logo, file, originalColours }) => (
       <li class="tile">
         {file && (
           <Image
             src={file}
             alt={partners.showNames ? "" : name}
-            class="logo"
+            class:list={["logo", { ink: !originalColours }]}
             {...(file.format === "svg" ? {} : rasterSizing)}
           />
         )}
@@ -81,6 +97,23 @@ const rasterSizing = { widths: [200, 400, 600], sizes: "10rem" };
     height: 3.5rem;
     object-fit: contain;
     mix-blend-mode: multiply;
+  }
+
+  /* One colour (filter above); the filter already drops white backgrounds, so no multiply. */
+  .ink {
+    filter: url("#logo-ink");
+    mix-blend-mode: normal;
+  }
+
+  .ink-flood {
+    flood-color: var(--color-logo);
+  }
+
+  .defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
   }
 
   .name {

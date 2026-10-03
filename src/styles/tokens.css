@@ -111,6 +111,7 @@
   --color-ink: #2a1b15;
   --color-ink-muted: #6b4a3a;
   --color-rule-on-dark: #9a5a4c;
+  --color-logo: var(--color-ink-muted); /* partner logos in one colour */
   --color-focus: var(--color-ink-red); /* dark sections override with paper */
   --focus-width: 2px; /* focus ring */
   --focus-offset: 3px;
