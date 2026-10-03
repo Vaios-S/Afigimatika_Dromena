@@ -161,6 +161,13 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **S7. Partner logos have no code yet**
 
+> **Fixed.** Each partner in `site.ts` is now `{ name, logo }`, where `logo` is a key in the image registry. The six logos are registered in `images.ts` as placeholders (`logo-*.svg`), so adding one works like any other image: drop the file in `src/assets/images/` and set `placeholder: false` (for a PNG, also change the extension in `src`). The registry now accepts SVG.
+>
+> - **Tile:** the logo is shown whole (`object-fit: contain`) in a fixed box 56px high and as wide as the tile, so it never shifts the layout, and square and wide logos sit at the same height. `mix-blend-mode: multiply` lets a logo with a white background take on the paper colour. PNG and other raster logos get 200, 400 and 600px versions; an SVG is served as it is.
+> - **Names:** `partners.showNames` (default `true`, to be decided with the group). While on, the name shows under the logo in a smaller size and the logo has an empty alt, so screen readers read the name once. When off, the logo stands alone and the name becomes its alt text. A partner without a logo always shows its name.
+> - **Placeholders:** while a logo is a placeholder, the tile shows the name with the "λογότυπο" hint, as before. With all six still placeholders the homepage markup is unchanged.
+> - **Tested** on a copy with a wide SVG, a wide PNG on a white background and a square transparent PNG, with names on and off, at 1440 and 390px.
+
 - Where: `src/sections/home/Partners.astro` (names only, plus a "λογότυπο" hint while placeholder tags are on).
 - Why: the logos are in the content request below, but nothing can show them yet.
 - Fix: add an optional `logo` (image key) per partner in `site.ts`, shown in the tile with the name as alt text. Decide with the group whether names stay visible next to the logos.
@@ -376,7 +383,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
   - Δημοτική Βιβλιοθήκη Θεσσαλονίκης
   - Δήμος Θεσσαλονίκης
 
-  Needed: the final list, plus each logo as SVG (or PNG at least 600px wide on a transparent background), with permission to use it. Showing them needs code (S7).
+  Needed: the final list, plus each logo as SVG (or PNG at least 600px wide on a transparent background), with permission to use it. To add one: see S7.
 
 - **Footer:** tagline "Αφηγήσεις σε όλη την Ελλάδα και το εξωτερικό" (confirm). "English (σύντομα)" stays until the English version.
 
@@ -456,7 +463,7 @@ Everything below is placeholder or still to be confirmed. "Flagged" means it sho
 | Milestone photos ×4        | `milestone-*.jpg`                            | 16:9         | 1600×900                                     |
 | Portraits ×3               | `portrait-*.jpg`                             | 3:4 portrait | 1200×1600                                    |
 | Share image                | `og-image.jpg`                               | 1200×630     | exactly 1200×630                             |
-| Partner logos ×6           | to be named                                  | any          | SVG, or PNG at least 600px wide, transparent |
+| Partner logos ×6           | `logo-*.svg` (or `.png`), see `images.ts`    | any          | SVG, or PNG at least 600px wide, transparent |
 | Logo / favicon (if any)    | `public/favicon.svg`, `apple-touch-icon.png` | square       | SVG, or at least 512×512 PNG                 |
 | Post covers                | beside each post                             | 16:9         | 1600×900, ideally 2200×1240                  |
 | Gallery and in-text photos | beside each post                             | any          | 1600px on the long side                      |

@@ -11,7 +11,7 @@
  * src/assets/placeholders/photo.svg with the alt text as a caption; for the
  * share image, src/assets/placeholders/og-image.png.
  * Real images are optimized by Astro at build time (resized, AVIF/WebP).
- * Accepted formats: jpg, jpeg, png, webp, avif.
+ * Accepted formats: jpg, jpeg, png, webp, avif, and svg (for logos).
  * `alt` describes the image for screen readers; write it for the real image.
  */
 import type { ImageMetadata } from "astro";
@@ -60,6 +60,41 @@ export const images = {
     alt: "Η Ελένη Μπασδάρα",
     placeholder: true,
   },
+  /**
+   * Partner logos (homepage "Συνεργασίες"), shown whole inside the tile, never
+   * cropped. SVG, or PNG at least 600px wide on a transparent background; for a
+   * PNG change the extension in `src`. The alt is the partner's name.
+   */
+  logoMinistry: {
+    src: "logo-ministry-of-culture.svg",
+    alt: "Υπουργείο Πολιτισμού",
+    placeholder: true,
+  },
+  logoFairyTaleRoute: {
+    src: "logo-european-fairy-tale-route.svg",
+    alt: "European Fairy Tale Route",
+    placeholder: true,
+  },
+  logoPelion: {
+    src: "logo-pelion-festival.svg",
+    alt: "Φεστιβάλ Πηλίου",
+    placeholder: true,
+  },
+  logoStorytellingClub: {
+    src: "logo-storytelling-club.svg",
+    alt: "Λέσχη Αφήγησης Θεσσαλονίκης",
+    placeholder: true,
+  },
+  logoLibrary: {
+    src: "logo-thessaloniki-library.svg",
+    alt: "Δημοτική Βιβλιοθήκη Θεσσαλονίκης",
+    placeholder: true,
+  },
+  logoMunicipality: {
+    src: "logo-thessaloniki-municipality.svg",
+    alt: "Δήμος Θεσσαλονίκης",
+    placeholder: true,
+  },
   /** Preview image when a page is shared (Open Graph). Best at 1200x630; other sizes are cropped to fit. */
   ogImage: {
     src: "og-image.jpg",
@@ -75,7 +110,7 @@ export type ImageKey = keyof typeof images;
    -------------------------------------------------------------------------- */
 
 const files = import.meta.glob<ImageMetadata>(
-  "../assets/images/*.{jpg,jpeg,png,webp,avif}",
+  "../assets/images/*.{jpg,jpeg,png,webp,avif,svg}",
   { eager: true, import: "default" },
 );
 

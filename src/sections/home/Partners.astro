@@ -1,9 +1,20 @@
 ---
 /**
- * Collaborations: partner names in simple tiles. Logos come later; until then
- * a small "λογότυπο" hint shows with the placeholder tags.
+ * Collaborations: partner tiles with logo and/or name (partners in site.ts).
+ * A logo is shown whole in a fixed box, so it never shifts the layout. While a
+ * logo is a placeholder, the name shows with a small "λογότυπο" hint (with the
+ * placeholder tags).
  */
+import { Image } from "astro:assets";
+import { imageFile } from "../../data/images";
 import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
+
+const tiles = partners.list.map((partner) => ({
+  ...partner,
+  file: partner.logo && imageFile(partner.logo),
+}));
+// Raster logos get responsive widths; an SVG is served as it is.
+const rasterSizing = { widths: [200, 400, 600], sizes: "10rem" };
 ---
 
 <section class="partners" aria-labelledby="partners-title">
@@ -11,10 +22,18 @@ import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
     {partners.title}
   </h2>
   <ul class="list" role="list">
-    {partners.list.map((name) => (
+    {tiles.map(({ name, logo, file }) => (
       <li class="tile">
-        <span class="name">{name}</span>
-        {SHOW_PLACEHOLDER_TAGS && (
+        {file && (
+          <Image
+            src={file}
+            alt={partners.showNames ? "" : name}
+            class="logo"
+            {...(file.format === "svg" ? {} : rasterSizing)}
+          />
+        )}
+        {(!file || partners.showNames) && <span class="name">{name}</span>}
+        {SHOW_PLACEHOLDER_TAGS && logo && !file && (
           <span class="hint">{partners.logoPlaceholder}</span>
         )}
       </li>
@@ -56,6 +75,14 @@ import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
     text-align: center;
   }
 
+  /* Fixed box, logo contained in it; multiply lets a white logo background take on the paper colour. */
+  .logo {
+    width: 100%;
+    height: 3.5rem;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+  }
+
   .name {
     font-family: var(--font-display);
     font-size: var(--text-name);
@@ -63,6 +90,10 @@ import { partners, SHOW_PLACEHOLDER_TAGS } from "../../data/site";
     line-height: 1.2;
     color: var(--color-ink-red);
     text-wrap: balance;
+  }
+
+  .logo + .name {
+    font-size: var(--text-caption);
   }
 
   .hint {

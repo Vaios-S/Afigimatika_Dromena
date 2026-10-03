@@ -188,18 +188,30 @@ export const testimonials = {
   ],
 };
 
+interface Partner {
+  name: string;
+  /** Logo in the image registry (images.ts). Leave out for a partner without one. */
+  logo?: ImageKey;
+}
+
 export const partners = {
   title: "Συνεργασίες",
-  /** Shown under each name while logos are missing (with the placeholder tags). */
+  /**
+   * Show each name under its logo. Set to false to show the logos alone (to be
+   * decided with the group); the name then becomes the logo's alt text.
+   * Partners without a logo always show their name.
+   */
+  showNames: true,
+  /** Shown under each name while its logo is a placeholder (with the placeholder tags). */
   logoPlaceholder: "λογότυπο",
   list: [
-    "Υπουργείο Πολιτισμού",
-    "European Fairy Tale Route",
-    "Φεστιβάλ Πηλίου",
-    "Λέσχη Αφήγησης Θεσσαλονίκης",
-    "Δημοτική Βιβλιοθήκη Θεσσαλονίκης",
-    "Δήμος Θεσσαλονίκης",
-  ],
+    { name: "Υπουργείο Πολιτισμού", logo: "logoMinistry" },
+    { name: "European Fairy Tale Route", logo: "logoFairyTaleRoute" },
+    { name: "Φεστιβάλ Πηλίου", logo: "logoPelion" },
+    { name: "Λέσχη Αφήγησης Θεσσαλονίκης", logo: "logoStorytellingClub" },
+    { name: "Δημοτική Βιβλιοθήκη Θεσσαλονίκης", logo: "logoLibrary" },
+    { name: "Δήμος Θεσσαλονίκης", logo: "logoMunicipality" },
+  ] satisfies Partner[],
 };
 
 export const header = {
