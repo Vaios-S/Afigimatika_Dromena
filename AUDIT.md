@@ -101,13 +101,41 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **S4. Render-blocking CSS (2 to 3 stylesheet requests per page)**
 
+> **Fixed.** `build.inlineStylesheets: "always"` in `astro.config.mjs`: each page carries its CSS in one `<style>` in the head, with no stylesheet requests. The built pages look the same as before: screenshots of the homepage, `/omada` and `/proskaleste-mas` match pixel for pixel, screen by screen, at 1440px, and seven pages match at 390px. Measured on the same machine before and after (Lighthouse mobile, median of 3):
+>
+> | Page             | FCP before → after | Perf before → after | Render-blocking before → after |
+> | ---------------- | ------------------ | ------------------- | ------------------------------ |
+> | /                | 3.02 → 2.26 s      | 88 → 87             | 0.93 s → 0                     |
+> | /omada           | 2.42 → 1.81 s      | 94 → 95             | 0.88 s → 0                     |
+> | /proskaleste-mas | 3.16 → 2.71 s      | 86 → 92             | 1.14 s → 0                     |
+> | /nea             | 2.71 → 2.27 s      | 91 → 95             | 0.99 s → 0                     |
+> | post (Πήλιο)     | 2.71 → 2.26 s      | 91 → 94             | 1.11 s → 0                     |
+>
+> In throttled Chrome (390px, CPU 4× slower, median of 25 loads over these five pages), first paint went from 1.82 to 0.57 s on slow 4G and from 1.77 to 0.22 s on fast 4G, and the largest paint from 1.82 to 1.18 s and from 1.77 to 1.06 s. The trade-off is that CSS (about 17 KB gzipped) is no longer cached between pages.
+>
+> Side effect: with no stylesheet holding back the first paint, Chrome can now paint the homepage hero before it has finished parsing it, then grow it. This happens on some loads only: 0.016 to 0.04 at worst, median 0, well under the 0.1 limit. The cause is the size of the hero's markup; see N5.
+
 - Where: `astro.config.mjs` (default `build.inlineStylesheets`).
 - Why: Lighthouse estimates 0.9 to 1.45 s of delay on slow 4G (First Contentful Paint 2.2 to 2.3 s on every page). Total CSS is only 17 to 18 KB gzipped per page.
 - Fix: set `build: { inlineStylesheets: "always" }`, then re-measure. The trade-off is that CSS is no longer cached between pages (about 17 KB per page view).
 
 **S5. Fonts: no preload, and text reflows when they arrive**
 
-> **Partly fixed in M2:** the reflow (layout shift) is solved by the metric-matched fallback faces. The preload remains for group 5.
+> **Fixed, without a preload.** The reflow (layout shift) was solved in M2 by the metric-matched fallback faces. The preload was built and measured, then left out because it slowed the pages down:
+>
+> - **What was tried:** a `<link rel="preload">` for the display font's regular face (Alegreya 400, Greek and Latin), which sets every `h1`. A second variant also preloaded the italic (the `em` in most titles). The display family was read from `tokens.css` at build time, so fonts stayed defined there only. Every first screen uses four faces (Alegreya 400, 400 italic, 500, Literata 400), each in Greek and Latin. Latin is always needed because the space is in the Latin subset.
+> - **Result** (on top of S4; throttled Chrome at 390px, CPU 4× slower, median of 25 loads over five pages):
+>
+>   | Variant                      | Slow 4G first / largest paint | Fast 4G first / largest paint | Title fonts ready (slow / fast) |
+>   | ---------------------------- | ----------------------------- | ----------------------------- | ------------------------------- |
+>   | No preload (kept)            | 0.57 / 1.18 s                 | 0.22 / 1.06 s                 | 1.97 / 1.20 s                   |
+>   | Preload regular (2 files)    | 0.88 / 1.37 s                 | 1.59 / 1.59 s                 | 1.83 / 1.34 s                   |
+>   | Preload regular + italic (4) | 1.08 / 1.47 s                 | 1.37 / 1.37 s                 | 0.80 / 0.24 s                   |
+>
+>   Lighthouse scores moved only within run-to-run noise.
+>
+> - **Why:** the preloaded files compete with the HTML for bandwidth and push back the first paint. The preload makes the fonts arrive earlier, but the fallback faces already take the same space, so the swap moves nothing. All it saves is a short moment of Georgia before Alegreya.
+> - If the group would rather never see the fallback, the four-file preload makes the first paint use the real fonts, at the cost of about 0.4 to 1.1 s of first paint. Recheck on the real host (HTTP/2 can favour the HTML) before adding it.
 
 - Where: `src/layouts/BaseLayout.astro` (head) and `src/styles/tokens.css:7-11`.
 - Why: every page downloads 10 font files (153 KB: Greek and Latin for 5 faces; the Latin files are needed for digits, punctuation and Latin names). The `h1` is the largest paint on every page. The font swap adds about 0.06 CLS to the homepage on phones.
@@ -117,6 +145,15 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
   - Re-measure together with S4.
 
 **S6. Photos are generated at most 1440px wide**
+
+> **Fixed.** `Photo.astro` now generates 480, 720, 960, 1440, 1920 and 2200px, in one `widths` list used by both its branches. Tested on a copy with real files:
+>
+> - a 2400px cover gets all six widths;
+> - a 1600px cover stops at its own width (480 to 1440, plus 1600) and is never enlarged;
+> - on the post page at 1440px Chrome picks the 2200 file on a 2× screen and 1440 on a 1× screen, and a 3× phone picks 1440;
+> - the `/nea` thumbnails still pick the small files, because the browser chooses by `sizes`.
+>
+> Only real images are affected (placeholders generate nothing), and the larger files add build time only for originals wider than 1440px.
 
 - Where: `src/components/Photo.astro:63` and `:73` (`widths`).
 - Why: post covers are shown up to 1100px wide, which needs about 2200px on retina screens, so real covers will look slightly soft on laptops.
@@ -149,7 +186,7 @@ Date: 1 October 2026. Scope: the whole project as committed (21 built pages). No
 
 **N4. `/proskaleste-mas` description is 166 characters.** `src/data/invite.ts:25`: keep it under about 155 so search results don't cut it.
 
-**N5. Homepage HTML is 156 KB (28 KB gzipped).** The eight inline corner ornaments in `Hero.astro` add about 68 KB before compression. They could become one `<symbol>` with `<use>`. Low priority, since gzip already absorbs most of it.
+**N5. Homepage HTML is 156 KB (28 KB gzipped).** The eight inline corner ornaments in `Hero.astro` add about 68 KB before compression. They could become one `<symbol>` with `<use>`. Low priority, since gzip already absorbs most of it. Since S4 this matters a little more: with the CSS inline, Chrome sometimes paints the hero while its long markup is still being parsed, which causes an occasional small layout shift (0.016 to 0.04, median 0). Shorter hero markup would remove it.
 
 **N6. While the form sends, the button is faded with `opacity: 0.65`.** `src/sections/invite/Letter.astro:614`: this lowers the contrast of "Στέλνεται…". Allowed for a disabled control, but a token colour would read better.
 

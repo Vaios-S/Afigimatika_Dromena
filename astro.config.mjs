@@ -10,6 +10,9 @@ export default defineConfig({
   // Canonical URLs, Open Graph URLs and the sitemap are built from this.
   site: contact.siteUrl,
   output: "static",
+  // CSS goes into each page's <head> (about 17 KB gzipped): no render-blocking
+  // stylesheet requests, at the cost of no CSS caching between pages.
+  build: { inlineStylesheets: "always" },
   integrations: [sitemap()],
   // Post bodies: drop cap, figures with captions, quotes with attribution.
   markdown: { processor: satteri({ hastPlugins: [postMarkdown] }) },

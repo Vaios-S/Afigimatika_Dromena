@@ -34,6 +34,7 @@ The approved homepage design is in `design/`. `design/export/*.html` is a self-u
 - Minimal, clean code. As few components as possible, no abstractions until they are needed.
 - JavaScript only where required, and always as an enhancement (every page works without it). There are four client scripts: the red thread (`red-thread.ts`), the storytellers sequence (`storytellers.ts`), the invite form (`letter.ts`) and the post page gallery and copy link (`post.ts`). Everything else is static HTML and CSS.
 - Colors, fonts and spacing come only from tokens in `src/styles/tokens.css`. No raw values in components.
+- CSS is inlined into every page (`build.inlineStylesheets: "always"` in `astro.config.mjs`), so no stylesheet blocks the first paint. Fonts are deliberately not preloaded: measured, a preload delayed the first and largest paint, and the metric-matched fallbacks already prevent the swap from moving text (AUDIT.md, S4 and S5).
 - Inside `.astro` `<style>` blocks, keep each CSS comment on one line. prettier-plugin-astro re-indents the continuation lines of multi-line comments on every run, so `npm run lint` never settles.
 - Semantic HTML and accessibility: AA contrast, visible focus states, alt text on images, `aria-hidden="true"` on decorative SVGs, respect `prefers-reduced-motion`.
 

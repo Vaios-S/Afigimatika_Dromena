@@ -32,6 +32,10 @@ const {
   class: className,
 } = Astro.props;
 const style = `--ratio: ${ratio}`;
+// Generated widths. Post covers are shown up to 1100px wide, so 2200 serves
+// retina screens; the browser picks by `sizes`, and Astro never enlarges a
+// smaller original.
+const widths = [480, 720, 960, 1440, 1920, 2200];
 
 let alt: string;
 let src: ImageMetadata | string | null;
@@ -60,7 +64,7 @@ if (typeof image === "string") {
     width={size.width ?? 1440}
     height={size.height ?? 960}
     sizes={sizes}
-    widths={[480, 720, 960, 1440]}
+    widths={widths}
     formats={["avif", "webp"]}
     class:list={["photo", className]}
     style={style}
@@ -70,7 +74,7 @@ if (typeof image === "string") {
     src={src}
     alt={alt}
     sizes={sizes}
-    widths={[480, 720, 960, 1440]}
+    widths={widths}
     formats={["avif", "webp"]}
     class:list={["photo", className]}
     style={style}
